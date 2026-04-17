@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vue3 摇杆、果冻 + 去抖优化</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+      :root {
+        --primary-color: #3b82f6;
+        --bg-color: #f3f4f6;
+        --box-bg: #ffffff;
+        --ctrl-bg: #e5e7eb;
+        --text-color: #666;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+        background-color: var(--bg-color);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        overflow: hidden;
+        user-select: none;
+      }
+      .container {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      /* 列表视口 */
+      .box {
+        width: 200px;
+        height: 400px;
+        background-color: var(--box-bg);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        position: relative;
+        border: 1px solid #e5e7eb;
+        z-index: 1;
+        cursor: grab;
+      }
+      .box:active {
+        cursor: grabbing;
+      }
+
+      /* --- Hint 容器样式 --- */
+      .hint {
+        position: absolute;
+        left: 0;
+        width: 100%;
+        z-index: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: var(--text-color);
+        font-size: 13px;
+        pointer-events: none;
+        opacity: 0.9;
+        overflow: hidden;
+      }
+      .hint-top {
+        top: 0;
+        background: linear-gradient(to bottom, #eff6ff, #fff);
+        border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+      }
+      .hint-bottom {
+        bottom: 0;
+        background: linear-gradient(to top, #eff6ff, #fff);
+        border-top: 1px solid rgba(59, 130, 246, 0.1);
+      }
+
+      .icon {
+        font-size: 24px;
+        margin-bottom: 4px;
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .hint.active {
+        color: var(--primary-color);
+        opacity: 1;
+        font-weight: bold;
+      }
+
+      .hint-top.active .icon {
+        transform: rotate(180deg) scale(1.2);
+      }
+      .hint-bottom.active .icon {
+        transform: rotate(-180deg) scale(1.2);
+      }
+
+      /* --- 列表内容 --- */
+      .ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        will-change: transform;
+        background-color: var(--box-bg);
+        position: relative;
+        z-index: 1;
+      }
+      .li {
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #f0f0f0;
+        color: #333;
+        font-size: 16px;
+        white-space: nowrap;
+        background-color: var(--box-bg);
+      }
+
+      /* 控制摇杆 */
+      .ctrl {
+        width: 60px;
+        height: 200px;
+        background-color: var(--ctrl-bg);
+        border-radius: 30px;
+        position: relative;
+        box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+        touch-action: none;
+        user-select: none;
+        z-index: 10;
+      }
+      .item {
+        width: 60px;
+        height: 60px;
+        background-color: var(--primary-color);
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        margin-top: -30px;
+        margin-left: -30px;
+        cursor: grab;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .item:active {
+        cursor: grabbing;
+        background-color: #2563eb;
+      }
+
+      /* 面板 */
+      .panel {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        width: 320px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        pointer-events: auto;
+        border: 1px solid #eee;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+      .panel-title {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+
+      .control-group {
+        margin-bottom: 12px;
+      }
+      .control-group label {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #555;
+        margin-bottom: 4px;
+      }
+      .control-group input[type="range"] {
+        width: 100%;
+        cursor: pointer;
+      }
+
+      .status-text {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #ddd;
+        font-size: 12px;
+        color: #666;
+        line-height: 1.6;
+      }
+      .divider {
+        height: 1px;
+        background: #eee;
+        margin: 10px 0;
+      }
+
+      .spring-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ccc;
+        margin-right: 5px;
+      }
+      .spring-active {
+        background: #10b981;
+        box-shadow: 0 0 5px #10b981;
+      }
+      .freeze-active {
+        background: #ef4444;
+        animation: pulse 1s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div class="panel">
+        <div class="panel-title">⚙️ 优化版物理引擎 (去抖)</div>
+
+        <div class="control-group">
+          <label
+            ><span>摇杆灵敏度</span><span>{{ stickSensitivity }}</span></label
+          >
+          <input
+            type="range"
+            v-model.number="stickSensitivity"
+            min="0.1"
+            max="2.0"
+            step="0.1"
+          />
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="panel-title">🖱️ 滚轮设置</div>
+
+        <div class="control-group">
+          <label
+            ><span>滚轮灵敏度</span><span>{{ wheelSensitivity }}</span></label
+          >
+          <input
+            type="range"
+            v-model.number="wheelSensitivity"
+            min="0.01"
+            max="0.5"
+            step="0.01"
+          />
+        </div>
+
+        <div class="control-group">
+          <label
+            ><span>最大拉伸范围</span
+            ><span>{{ wheelMaxOverScroll }}px</span></label
+          >
+          <input
+            type="range"
+            v-model.number="wheelMaxOverScroll"
+            min="100"
+            max="300"
+            step="10"
+          />
+        </div>
+
+        <div class="control-group">
+          <label title="滚轮拉伸后悬停多久才回弹"
+            ><span>悬停延迟</span><span>{{ freezeDelay }}ms</span></label
+          >
+          <input
+            type="range"
+            v-model.number="freezeDelay"
+            min="0"
+            max="3000"
+            step="100"
+          />
+        </div>
+
+        <div class="control-group">
+          <label
+            ><span>回弹强度</span><span>{{ wheelRestitution }}</span></label
+          >
+          <input
+            type="range"
+            v-model.number="wheelRestitution"
+            min="0.0"
+            max="0.8"
+            step="0.05"
+          />
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="panel-title">
+          <span
+            class="spring-indicator"
+            :class="{ 'spring-active': isOverscrolling && !isWheelFreezing, 'freeze-active': isWheelFreezing }"
+          ></span>
+          <span>🍮 果冻/弹簧效果</span>
+        </div>
+
+        <div class="control-group">
+          <label
+            ><span>摇杆撞墙回弹</span><span>{{ wallRestitution }}</span></label
+          >
+          <input
+            type="range"
+            v-model.number="wallRestitution"
+            min="0.0"
+            max="1.0"
+            step="0.05"
+          />
+        </div>
+
+        <div class="control-group">
+          <label><span>弹簧硬度</span><span>{{ springStiffness }}</span></label>
+          <input
+            type="range"
+            v-model.number="springStiffness"
+            min="0.05"
+            max="0.5"
+            step="0.01"
+          />
+        </div>
+        <div class="control-group">
+          <label><span>弹簧阻尼</span><span>{{ springDamping }}</span></label>
+          <input
+            type="range"
+            v-model.number="springDamping"
+            min="0.6"
+            max="0.99"
+            step="0.01"
+          />
+        </div>
+
+        <div class="status-text">
+          输入源: {{ modeText }} <br />
+          位置(Y): {{ displayScrollY }} <br />
+          状态: {{ physicsStatus }} <br />
+          <span v-if="isWheelFreezing" style="color: #ef4444; font-weight: bold"
+            >⏸️ 滚轮悬停中 (等待回弹...)</span
+          >
+          <span
+            v-else-if="isOverscrolling"
+            style="color: #10b981; font-weight: bold"
+            >● 拉伸/回弹中</span
+          >
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="box" ref="boxRef" @wheel.prevent="onWheel">
+          <div
+            class="hint hint-top"
+            :class="{ active: topPullRatio > 1.0 }"
+            :style="topHintStyle"
+          >
+            <div class="icon">🔄</div>
+            <div>{{ topPullRatio > 1.0 ? '释放刷新' : '下拉刷新' }}</div>
+          </div>
+
+          <!-- 使用 computed 属性优化 transform 渲染 -->
+          <div
+            class="ul"
+            ref="ulRef"
+            :style="{ transform: `translateY(${displayScrollY}px)` }"
+          >
+            <div class="li" v-for="i in 50" :key="i">列表项 - {{ i }}</div>
+          </div>
+
+          <div
+            class="hint hint-bottom"
+            :class="{ active: bottomPullRatio > 1.0 }"
+            :style="bottomHintStyle"
+          >
+            <div class="icon">⬆️</div>
+            <div>{{ bottomPullRatio > 1.0 ? '释放加载' : '上拉加载' }}</div>
+          </div>
+        </div>
+
+        <div
+          class="ctrl"
+          ref="ctrlRef"
+          @mousedown="startDrag"
+          @touchstart.prevent="startDrag"
+        >
+          <div
+            class="item"
+            :style="{ 
+                    transform: `translate(0, ${itemY}px)`,
+                    transition: isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                }"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const { createApp, ref, onMounted, onUnmounted, computed } = Vue;
+
+      createApp({
+        setup() {
+          const boxRef = ref(null);
+          const ulRef = ref(null);
+
+          // 摇杆灵敏度
+          const stickSensitivity = ref(0.2);
+          // 中键灵敏度
+          const mouseSensitivity = ref(0.1);
+          // 滚轮灵敏度
+          const wheelSensitivity = ref(0.05);
+
+          // 弹簧硬度, 越大可拉伸距离(过界)越短
+          const springStiffness = ref(0.1);
+          // 弹簧阻尼, 越大回弹越激烈
+          const springDamping = ref(0.9);
+          // 弹簧撞墙回弹, 越大回弹越激烈
+          const wallRestitution = ref(0.6);
+
+          // 滚轮回弹强度, 越大回弹越激烈
+          const wheelRestitution = ref(0.4);
+          // 滚轮最大拉伸范围
+          const wheelMaxOverScroll = ref(200);
+          // 滚轮悬停延迟
+          const freezeDelay = ref(500);
+
+          const scrollY = ref(0);
+          const itemY = ref(0);
+          const isDragging = ref(false);
+          const velocity = ref(0);
+          const isOverscrolling = ref(false);
+
+          const isMiddleMouseActive = ref(false);
+          const middleMouseStartY = ref(0);
+          const virtualItemY = ref(0);
+
+          const topPullRatio = ref(0);
+          const bottomPullRatio = ref(0);
+
+          const inputSource = ref("inertia");
+
+          const isWheelFreezing = ref(false);
+          let freezeTimer = null;
+
+          const physicsStatus = computed(() => {
+            if (isWheelFreezing.value) return "悬停等待";
+            if (isOverscrolling.value) return "回弹/拉伸";
+            return "正常滚动";
+          });
+
+          const currentRestitution = computed(() => {
+            if (inputSource.value === "wheel") {
+              return wheelRestitution.value;
+            }
+            return wallRestitution.value;
+          });
+
+          const modeText = computed(() => {
+            if (inputSource.value === "wheel") return "滚轮 (悬停)";
+            if (inputSource.value === "middle") return "中键导航";
+            if (inputSource.value === "stick") return "摇杆拖拽";
+            if (Math.abs(velocity.value) > 0.1) return "惯性滑动";
+            return "静止";
+          });
+
+          // --- 优化：对显示数值进行取整，避免 0.123456 ---
+          const displayScrollY = computed(() => scrollY.value.toFixed(2));
+
+          const topHintStyle = computed(() => {
+            const h = Math.max(0, scrollY.value);
+            return { height: `${h}px` };
+          });
+
+          const bottomHintStyle = computed(() => {
+            const h = Math.abs(scrollY.value - maxScroll);
+            return { height: `${h}px` };
+          });
+
+          const config = {
+            maxDistance: 70,
+            friction: 0.95,
+            stopThreshold: 0.05,
+            pullThreshold: 80,
+          };
+
+          let itemStartY = 0;
+          let rafId = null;
+          let maxScroll = 0;
+
+          const onWheel = (e) => {
+            if (isDragging.value || isMiddleMouseActive.value) return;
+            inputSource.value = "wheel";
+
+            if (scrollY.value > 0 || scrollY.value < maxScroll) {
+              isWheelFreezing.value = true;
+              if (freezeTimer) clearTimeout(freezeTimer);
+              freezeTimer = setTimeout(() => {
+                isWheelFreezing.value = false;
+              }, freezeDelay.value);
+            }
+
+            const maxWheelSpeed = 30;
+            let impulse = -e.deltaY * wheelSensitivity.value;
+
+            velocity.value += impulse;
+            velocity.value = Math.max(
+              -maxWheelSpeed,
+              Math.min(maxWheelSpeed, velocity.value)
+            );
+            // rafId = requestAnimationFrame(physicsLoop);
+          };
+
+          const physicsLoop = () => {
+            let activeInputY = 0;
+            let isControlActive = false;
+
+            if (isDragging.value) {
+              activeInputY = itemY.value;
+              isControlActive = true;
+              inputSource.value = "stick";
+              isWheelFreezing.value = false;
+              if (freezeTimer) {
+                clearTimeout(freezeTimer);
+                freezeTimer = null;
+              }
+            } else if (isMiddleMouseActive.value) {
+              activeInputY = virtualItemY.value;
+              isControlActive = true;
+              inputSource.value = "middle";
+              isWheelFreezing.value = false;
+              if (freezeTimer) {
+                clearTimeout(freezeTimer);
+                freezeTimer = null;
+              }
+            }
+
+            if (isControlActive) {
+              const sensitivity =
+                inputSource.value === "stick"
+                  ? stickSensitivity.value
+                  : mouseSensitivity.value;
+              velocity.value = -activeInputY * sensitivity;
+            } else {
+              if (Math.abs(velocity.value) < config.stopThreshold) {
+                velocity.value = 0;
+              } else {
+                velocity.value = velocity.value * config.friction;
+              }
+            }
+
+            if (ulRef.value && boxRef.value) {
+              const contentH = ulRef.value.offsetHeight;
+              const containerH = boxRef.value.offsetHeight;
+              maxScroll = Math.min(0, -(contentH - containerH));
+            }
+
+            let displacement = 0;
+            isOverscrolling.value = false;
+
+            if (scrollY.value > 0) {
+              displacement = scrollY.value;
+              isOverscrolling.value = true;
+              topPullRatio.value = scrollY.value / config.pullThreshold;
+            } else if (scrollY.value < maxScroll) {
+              displacement = scrollY.value - maxScroll;
+              isOverscrolling.value = true;
+              bottomPullRatio.value =
+                Math.abs(scrollY.value - maxScroll) / config.pullThreshold;
+            } else {
+              if (topPullRatio.value > 0) topPullRatio.value = 0;
+              if (bottomPullRatio.value > 0) bottomPullRatio.value = 0;
+            }
+
+            if (displacement !== 0) {
+              if (isWheelFreezing.value) {
+                velocity.value *= 0.5;
+                displacement = 0;
+              } else {
+                let springForce = -displacement * springStiffness.value;
+                velocity.value += springForce;
+                velocity.value *= springDamping.value;
+              }
+
+              if (
+                Math.abs(velocity.value) < 0.2 &&
+                Math.abs(displacement) < 0.2 &&
+                !isWheelFreezing.value
+              ) {
+                scrollY.value = displacement > 0 ? 0 : maxScroll;
+                velocity.value = 0;
+                isWheelFreezing.value = false;
+              }
+            }
+
+            let nextScrollY = scrollY.value + velocity.value;
+
+            if (!isControlActive) {
+              const maxVel = 40;
+              velocity.value = Math.max(
+                -maxVel,
+                Math.min(maxVel, velocity.value)
+              );
+            }
+
+            if (!isControlActive) {
+              const restitution = currentRestitution.value;
+
+              if (!isWheelFreezing.value) {
+                if (scrollY.value > 0 && nextScrollY <= 0) {
+                  nextScrollY = 0;
+                  velocity.value = -velocity.value * restitution;
+                } else if (
+                  scrollY.value < maxScroll &&
+                  nextScrollY >= maxScroll
+                ) {
+                  nextScrollY = maxScroll;
+                  velocity.value = -velocity.value * restitution;
+                }
+              }
+
+              const limit =
+                inputSource.value === "wheel" ? wheelMaxOverScroll.value : 100;
+              if (nextScrollY < maxScroll - limit)
+                nextScrollY = maxScroll - limit;
+              if (nextScrollY > limit) nextScrollY = limit;
+            }
+
+            scrollY.value = nextScrollY;
+
+            // --- 优化：强制吸附，消除微颤 ---
+            // 当速度很小，且位置非常接近边界(0或maxScroll)时，直接归位
+            // 这样可以避免在 0.1px 的范围内反复计算弹簧力
+            if (
+              !isOverscrolling &&
+              !isControlActive &&
+              !isWheelFreezing.value
+            ) {
+              if (Math.abs(velocity.value) < 0.1) {
+                // 靠近顶部
+                if (Math.abs(scrollY.value) < 0.2) {
+                  scrollY.value = 0;
+                  velocity.value = 0;
+                }
+                // 靠近底部
+                else if (Math.abs(scrollY.value - maxScroll) < 0.2) {
+                  scrollY.value = maxScroll;
+                  velocity.value = 0;
+                }
+              }
+            }
+            // console.log(scrollY.value, velocity.value);
+            // if(velocity.value != 0){
+            //   rafId = requestAnimationFrame(physicsLoop);
+            // }
+            rafId = requestAnimationFrame(physicsLoop);
+          };
+
+          const startDrag = (e) => {
+            if (isMiddleMouseActive.value) return;
+            isDragging.value = true;
+            inputSource.value = "stick";
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            itemStartY = clientY - itemY.value;
+
+            window.addEventListener("mousemove", onDrag);
+            window.addEventListener("mouseup", endDrag);
+            window.addEventListener("touchmove", onDrag, { passive: false });
+            window.addEventListener("touchend", endDrag);
+          };
+
+          const onDrag = (e) => {
+            if (!isDragging.value) return;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            let deltaY = clientY - itemStartY;
+            let clampedY = Math.max(
+              -config.maxDistance,
+              Math.min(config.maxDistance, deltaY)
+            );
+            itemY.value = clampedY;
+          };
+
+          const endDrag = () => {
+            isDragging.value = false;
+            itemY.value = 0;
+            window.removeEventListener("mousemove", onDrag);
+            window.removeEventListener("mouseup", endDrag);
+            window.removeEventListener("touchmove", onDrag);
+            window.removeEventListener("touchend", endDrag);
+          };
+
+          const toggleMiddleMouse = (e) => {
+            if (e.button !== 1) return;
+            if (!isMiddleMouseActive.value) {
+              isMiddleMouseActive.value = true;
+              inputSource.value = "middle";
+              middleMouseStartY.value = e.clientY;
+              virtualItemY.value = 0;
+              document.documentElement.style.cursor = "grabbing";
+              document.body.style.pointerEvents = "none";
+              window.addEventListener("mousemove", handleMouseMove);
+              window.addEventListener("mousedown", handleMiddleMouseStop);
+            } else {
+              handleMiddleMouseStop(e);
+            }
+          };
+
+          const handleMouseMove = (e) => {
+            if (!isMiddleMouseActive.value) return;
+            const deltaY = e.clientY - middleMouseStartY.value;
+            virtualItemY.value = deltaY;
+          };
+
+          const handleMiddleMouseStop = (e) => {
+            if (e.button !== 1) return;
+            isMiddleMouseActive.value = false;
+            virtualItemY.value = 0;
+            document.documentElement.style.cursor = "";
+            document.body.style.pointerEvents = "auto";
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mousedown", handleMiddleMouseStop);
+          };
+
+          onMounted(() => {
+            rafId = requestAnimationFrame(physicsLoop);
+            window.addEventListener("mousedown", toggleMiddleMouse);
+          });
+
+          onUnmounted(() => {
+            cancelAnimationFrame(rafId);
+            if (freezeTimer) clearTimeout(freezeTimer);
+            window.removeEventListener("mousemove", onDrag);
+            window.removeEventListener("mouseup", endDrag);
+            window.removeEventListener("touchmove", onDrag);
+            window.removeEventListener("touchend", endDrag);
+            window.removeEventListener("mousedown", toggleMiddleMouse);
+            window.removeEventListener("mousemove", handleMouseMove);
+            window.removeEventListener("mousedown", handleMiddleMouseStop);
+          });
+
+          return {
+            boxRef,
+            ulRef,
+            scrollY,
+            itemY,
+            isDragging,
+            velocity,
+            isMiddleMouseActive,
+            virtualItemY,
+            stickSensitivity,
+            mouseSensitivity,
+            wheelSensitivity,
+            springStiffness,
+            springDamping,
+            wallRestitution,
+            wheelRestitution,
+            wheelMaxOverScroll,
+            freezeDelay,
+            isOverscrolling,
+            modeText,
+            maxScroll,
+            startDrag,
+            topPullRatio,
+            bottomPullRatio,
+            topHintStyle,
+            bottomHintStyle,
+            onWheel,
+            currentRestitution,
+            isWheelFreezing,
+            physicsStatus,
+            displayScrollY, // 导出用于显示的数值
+          };
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>

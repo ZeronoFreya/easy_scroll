@@ -1,0 +1,35 @@
+.es_scroll_containter {
+    width: 200px;
+    height: 400px;
+    background-color: var(--box-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #e5e7eb;
+    z-index: 1;
+    cursor: grab;
+    &:active {
+        cursor: grabbing;
+    }
+    .es_scroll_content{
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        will-change: transform;
+        background-color: var(--box-bg);
+        position: relative;
+        z-index: 1;
+    }
+    li{
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-bottom: 1px solid #f0f0f0;
+        color: #333;
+        font-size: 16px;
+        white-space: nowrap;
+        background-color: var(--box-bg);
+    }
+}

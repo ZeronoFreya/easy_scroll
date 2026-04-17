@@ -1,0 +1,15 @@
+.es_scroll_containter()
+    .es_scroll_box(ref="boxRef", @wheel.prevent="wheel.onWheel")
+        //- .es_scroll_hint.es_hint_top(
+        //-     :class="{ active: topPullRatio > 1.0 }", 
+        //-     :style="topHintStyle"
+        //- ) hint_top
+        .es_scroll_content(
+            ref="ulRef", :class="$attrs.class", 
+            :style="{ transform: `translateY(${displayScrollY}px)` }"
+        )
+            li(v-for="i in 50" :key="i") 列表项 - {{ i }}
+        //- .es_scroll_hint.es_hint_bottom(
+        //-     :class="{ active: bottomPullRatio > 1.0 }", 
+        //-     :style="bottomHintStyle"
+        //- ) hint_bottom

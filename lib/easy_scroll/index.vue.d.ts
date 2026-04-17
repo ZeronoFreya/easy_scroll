@@ -1,0 +1,38 @@
+declare const _default: import('vue').DefineComponent<
+    {
+        /**
+         * 滚动方向
+         * @default 'xy'
+         */
+        scroll?: 'x' | 'y' | 'xy'
+
+        /**
+         * 是否使用摇杆
+         * @default false
+         */
+        joyStick?: boolean
+
+        /**
+         * 是否使用鼠标中键导航
+         * @default false
+         */
+        midMouseNav?: boolean
+    },
+    {
+        /**
+         * 滚动到指定位置
+         * @param x X坐标
+         * @param y Y坐标
+         */
+        scrollTo: (x: number, y: number) => void
+        /**
+         * 滚动到顶部
+         */
+        scrollToTop: () => void
+        /**
+         * 滚动到底部
+         */
+        scrollToBottom: () => void
+    }
+>
+export default _default
