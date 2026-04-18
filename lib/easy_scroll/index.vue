@@ -1,6 +1,8 @@
 <script>
-import { defineComponent, ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { defineComponent, ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import sProps from './props.js'
+
+import Cursor from './cursor.vue'
 
 import useWheel from './use_wheel.js'
 import useStick from './use_stick.js'
@@ -9,15 +11,15 @@ import useMidNav from './use_midnav.js'
 import useLoop from './use_loop.js'
 
 export default defineComponent({
-    components: {},
+    components: {Cursor},
     inheritAttrs: false,
     props: sProps,
     setup(props) {
         const boxRef = ref(null)
         const ulRef = ref(null)
 
-        const runtimeData = reactive({   
-            rafId: null,         
+        const runtimeData = reactive({
+            rafId: null,
             isDragging: false,
             isMiddleMouseActive: false,
             inputSource: 'inertia',
@@ -29,46 +31,64 @@ export default defineComponent({
             velocity: 0,
             isWheelFreezing: false,
             isOverscrolling: false,
+            virtualItemY: 0,
         })
-        const physicsLoop = useLoop(runtimeData)
-        const loop = () => {
-            console.log('loop', runtimeData.velocity);
-            
-            if (runtimeData.velocity != 0) {
+
+        const startLoop = () => {
+            if (!runtimeData.rafId) {
                 runtimeData.rafId = requestAnimationFrame(physicsLoop)
             }
         }
+        const stopLoop = () => {
+            if (runtimeData.rafId) {
+                cancelAnimationFrame(runtimeData.rafId);
+                runtimeData.rafId = null;
+            }
+        };
 
-        const wheel = useWheel(runtimeData, loop)
-        const extra = reactive({
+        const scrollCtrl = reactive({
+            wheel: useWheel(runtimeData, props.overTip, startLoop),
             stick: props.joyStick ? useStick() : null,
-            midnav: props.midMouseNav ? useMidNav() : null,
+            midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop) : null,
         })
 
+        const physicsLoop = useLoop(runtimeData, scrollCtrl)    
+        
+
         const displayScrollY = computed(() => runtimeData.scroll.y.toFixed(2))
+
+        const updateMaxScroll = ()=>{
+            if (ulRef.value && boxRef.value) {
+                runtimeData.maxScroll = Math.min(
+                    0,
+                    boxRef.value.offsetHeight - ulRef.value.offsetHeight,
+                )                
+            }
+        }
 
         const options = {
             box: 'border-box', // 确保 CSS 计算尺寸时包括边框和内边距
         }
         const observer = new ResizeObserver(() => {
-            runtimeData.maxScroll = Math.min(
-                0,
-                boxRef.value.offsetHeight - ulRef.value.offsetHeight,
-            )
+            updateMaxScroll()
+
         })
 
         onMounted(() => {
-            // rafId = requestAnimationFrame(physicsLoop)
-            // window.addEventListener('mousedown', toggleMiddleMouse)
+            boxRef.value.addEventListener('wheel', scrollCtrl.wheel.onWheel, { passive: true })
 
+            if(scrollCtrl.midnav){
+                scrollCtrl.midnav.init()
+            }
+            
+            updateMaxScroll()
             observer.observe(boxRef.value, options)
             observer.observe(ulRef.value, options)
 
-            runtimeData.rafId = requestAnimationFrame(physicsLoop)
         })
 
-        onUnmounted(() => {
-            // cancelAnimationFrame(rafId)
+        onBeforeUnmount(() => {
+            stopLoop();
             // if (freezeTimer) clearTimeout(freezeTimer)
             // window.removeEventListener('mousemove', onDrag)
             // window.removeEventListener('mouseup', endDrag)
@@ -83,9 +103,9 @@ export default defineComponent({
             observer.disconnect()
         })
         return {
+            scrollCtrl,
             boxRef,
             ulRef,
-            wheel,
             displayScrollY,
         }
     },

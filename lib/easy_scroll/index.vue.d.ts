@@ -17,6 +17,12 @@ declare const _default: import('vue').DefineComponent<
          * @default false
          */
         midMouseNav?: boolean
+
+        /**
+         * 是否使用过界提示
+         * @default false
+         */
+        overTip?: boolean
     },
     {
         /**

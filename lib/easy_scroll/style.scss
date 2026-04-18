@@ -1,18 +1,22 @@
 .es_scroll_containter {
-    width: 200px;
-    height: 400px;
-    background-color: var(--box-bg);
-    border-radius: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    position: relative;
-    border: 1px solid #e5e7eb;
-    z-index: 1;
-    cursor: grab;
-    &:active {
-        cursor: grabbing;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .es_scroll_box {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+        background-color: var(--bg-color);
+        width: 30vw;
+        height: 60vh;
+        overflow: hidden;
+        user-select: none;
+        &:active {
+            cursor: grabbing;
+        }
     }
-    .es_scroll_content{
+    .es_scroll_content {
         list-style: none;
         padding: 0;
         margin: 0;
@@ -21,7 +25,7 @@
         position: relative;
         z-index: 1;
     }
-    li{
+    li {
         height: 50px;
         display: flex;
         align-items: center;

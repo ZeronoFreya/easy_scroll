@@ -1,5 +1,5 @@
-.es_scroll_containter()
-    .es_scroll_box(ref="boxRef", @wheel.prevent="wheel.onWheel")
+.es_scroll_containter
+    .es_scroll_box(ref="boxRef")
         //- .es_scroll_hint.es_hint_top(
         //-     :class="{ active: topPullRatio > 1.0 }", 
         //-     :style="topHintStyle"
@@ -13,3 +13,7 @@
         //-     :class="{ active: bottomPullRatio > 1.0 }", 
         //-     :style="bottomHintStyle"
         //- ) hint_bottom
+    Cursor(v-if="scrollCtrl.midnav", 
+        :start="scrollCtrl.midnav.startPos", 
+        :pos="scrollCtrl.midnav.cursorPos"
+    )

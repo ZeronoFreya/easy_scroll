@@ -12,7 +12,7 @@ export default {
 </script>
 
 <template lang="pug">
-EasyScroll
+EasyScroll(:midMouseNav="true")
 </template>
 
 <style lang="scss">
