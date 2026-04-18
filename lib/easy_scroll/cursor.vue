@@ -24,10 +24,10 @@ export default {
                 return 0; // 或抛出错误，因为角度无定义
             }
             // 计算点积和叉积
-            const dot = -dy;        // AB · AY (AY = [0, -1])
-            const cross = -dx;      // AB × AY (叉积的Z分量)
+            // const dot = -dy;        // AB · AY (AY = [0, -1])
+            // const cross = -dx;      // AB × AY (叉积的Z分量)
             // 计算带方向的夹角（弧度）
-            let angleRad = Math.atan2(cross, dot);
+            let angleRad = Math.atan2(-dx, -dy);
             // 转换为顺时针角度（0-360度）
             let angleDeg = -angleRad * 180 / Math.PI;
             if (angleDeg < 0) {
@@ -35,6 +35,7 @@ export default {
             }
             return angleDeg;
         }
+
 
 
         const cursorStyle = computed(() => {
