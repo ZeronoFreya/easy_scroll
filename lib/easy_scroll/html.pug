@@ -13,7 +13,7 @@
         //-     :class="{ active: bottomPullRatio > 1.0 }", 
         //-     :style="bottomHintStyle"
         //- ) hint_bottom
-    Cursor(v-if="scrollCtrl.midnav", 
+    Cursor(v-if="scrollCtrl.midnav.active", 
         :start="scrollCtrl.midnav.startPos", 
         :pos="scrollCtrl.midnav.cursorPos"
     )

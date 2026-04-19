@@ -31,7 +31,6 @@ export default defineComponent({
             velocity: 0,
             isWheelFreezing: false,
             isOverscrolling: false,
-            virtualItemY: 0,
         })
 
         const startLoop = () => {

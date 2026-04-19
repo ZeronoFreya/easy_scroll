@@ -15,10 +15,10 @@ export default {
     },
     setup(props) {
 
-        function calculateAngle(Ax, Ay, Bx, By) {
+        function calculateAngle(p1, p2) {
             // 计算向量AB的分量
-            const dx = Bx - Ax;
-            const dy = By - Ay;
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
             // 处理A和B重合的特殊情况
             if (dx === 0 && dy === 0) {
                 return 0; // 或抛出错误，因为角度无定义
@@ -36,6 +36,14 @@ export default {
             return angleDeg;
         }
 
+        // 为了性能，直接比较平方和
+        // const Radius = 40 * 40
+        // function squaredDistance(p1, p2) {
+        //     const dx = p1.x - p2.x;
+        //     const dy = p1.y - p2.y;
+        //     return dx * dx + dy * dy;
+        // }
+
 
 
         const cursorStyle = computed(() => {
@@ -45,7 +53,12 @@ export default {
         })
 
         const rotate = computed(() => {
-            return calculateAngle(props.start.x, props.start.y, props.pos.x, props.pos.y)
+            // const d = squaredDistance(props.start, props.pos)
+            const r = calculateAngle(props.start, props.pos)
+            // if (d < Radius) {                
+            //     return r * d / Radius
+            // }
+            return r
         })
 
         return {
@@ -68,9 +81,9 @@ export default {
             </defs>
             <circle cx="512" cy="512" r="80" />
             <use href="#arrow" :transform="`rotate(${rotate} 512 512)`" />
+            <!-- <use href="#arrow" :transform="`rotate(${rotate} 512 512)`" />
             <use href="#arrow" :transform="`rotate(${rotate} 512 512)`" />
-            <use href="#arrow" :transform="`rotate(${rotate} 512 512)`" />
-            <use href="#arrow" :transform="`rotate(${rotate} 512 512)`" />
+            <use href="#arrow" :transform="`rotate(${rotate} 512 512)`" /> -->
         </svg>
     </div>
 </template>
@@ -78,6 +91,7 @@ export default {
 <style>
 .es_mid_nav_cursor {
     position: fixed;
+    z-index: 9999999;
     top: 0;
     left: 0;
     width: 32px;
@@ -85,5 +99,6 @@ export default {
     transform: translate(-100%, -100%);
     pointer-events: none;
     will-change: transform;
+    opacity: 0.8;
 }
 </style>
