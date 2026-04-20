@@ -3,9 +3,10 @@ import { defineComponent, ref, reactive, computed, onMounted, onBeforeUnmount } 
 import sProps from './props.js'
 
 import Cursor from './cursor.vue'
+// import ScrollBar from './scrollbar.vue'
 
 import useWheel from './use_wheel.js'
-import useStick from './use_stick.js'
+import useScrollbar from './use_scrollbar.js'
 import useMidNav from './use_midnav.js'
 
 import useLoop from './use_loop.js'
@@ -46,8 +47,8 @@ export default defineComponent({
         };
 
         const scrollCtrl = reactive({
-            wheel: useWheel(runtimeData, props.overTip, startLoop),
-            stick: props.joyStick ? useStick() : null,
+            wheel: useWheel(runtimeData, startLoop, props.overTip),
+            scroll: useScrollbar(runtimeData, startLoop, props.joyStick),
             midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop) : null,
         })
 
@@ -102,6 +103,7 @@ export default defineComponent({
             observer.disconnect()
         })
         return {
+            runtimeData,
             scrollCtrl,
             boxRef,
             ulRef,

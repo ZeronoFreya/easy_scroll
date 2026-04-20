@@ -13,7 +13,21 @@
         //-     :class="{ active: bottomPullRatio > 1.0 }", 
         //-     :style="bottomHintStyle"
         //- ) hint_bottom
-    Cursor(v-if="scrollCtrl.midnav.active", 
+    //- ScrollBar(scroll="y", :data="scrollCtrl.scroll")
+    //-     template(#default="slotProps")
+    slot(name="scroll_y", :title="'title'")
+        .es_scroll_bar.es_scroll_y
+            .es_track(
+                data-scroll="y",
+                @pointerdown.stop.prevent="scrollCtrl.scroll.track_down"
+            )
+                .es_track_view
+                .es_thumb(thumb, key="thumb",
+                    :class="{joytick: joyStick}"
+                    :style="{transition: runtimeData.isDragging ? 'none' : 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'}"
+                )
+                    .es_thumb_view  
+    Cursor(v-if="scrollCtrl.midnav && scrollCtrl.midnav.active", 
         :start="scrollCtrl.midnav.startPos", 
         :pos="scrollCtrl.midnav.cursorPos"
     )

@@ -1,9 +1,13 @@
 .es_scroll_containter {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 20px;
+    width: fit-content;
 
     .es_scroll_box {
+        position: relative;
+        z-index: 1;
         margin: 0;
         padding: 0;
         font-family: sans-serif;
@@ -35,5 +39,59 @@
         font-size: 16px;
         white-space: nowrap;
         background-color: var(--box-bg);
+    }
+}
+
+.es_scroll_bar{
+    position: absolute;
+    background: goldenrod;
+    z-index: 2;
+    .es_track {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+    .es_track_view {
+        width: 100%;
+        height: 100%;
+        background: red;
+    }
+    .es_thumb {
+        position: absolute;
+
+        width: 100%;
+        height: 100%;
+
+        
+    }
+    .es_thumb_view {
+        background: greenyellow;
+    }
+    &.es_scroll_y {
+        top: 0;
+        right: 0;
+        width: 30px;
+        height: 100%;
+        .es_track {
+            padding: 0 5px;
+        }
+        .es_thumb {
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, 0);
+            padding: 0 5px;
+
+            &.joytick{
+                height: 100px;
+                top: 50%;
+                transform: translate(0, 0);
+                margin-top: -50px;
+                margin-left: calc(100% * -0.5);
+            }
+        }
+        .es_thumb_view {
+            width: 100%;
+            height: 100px;
+        }
     }
 }
