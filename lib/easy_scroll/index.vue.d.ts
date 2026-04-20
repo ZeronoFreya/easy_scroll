@@ -4,13 +4,19 @@ declare const _default: import('vue').DefineComponent<
          * 滚动方向
          * @default 'xy'
          */
-        scroll?: 'x' | 'y' | 'xy'
+        scrollAxis?: 'x' | 'y' | 'xy'
 
         /**
-         * 是否使用摇杆
+         * 是否使用滚动条
+         * @default true
+         */
+        scrollBar?: boolean
+
+        /**
+         * 滚动条启用摇杆模式
          * @default false
          */
-        joyStick?: boolean
+        scrollJoy?: boolean
 
         /**
          * 是否使用鼠标中键导航

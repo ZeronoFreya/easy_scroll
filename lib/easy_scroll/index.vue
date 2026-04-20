@@ -48,7 +48,7 @@ export default defineComponent({
 
         const scrollCtrl = reactive({
             wheel: useWheel(runtimeData, startLoop, props.overTip),
-            scroll: useScrollbar(runtimeData, startLoop, props.joyStick),
+            scroll: useScrollbar(runtimeData, startLoop, props.scrollJoy),
             midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop) : null,
         })
 
@@ -62,7 +62,10 @@ export default defineComponent({
                 runtimeData.maxScroll = Math.min(
                     0,
                     boxRef.value.offsetHeight - ulRef.value.offsetHeight,
-                )                
+                )     
+                if(scrollCtrl.scroll){
+                    scrollCtrl.scroll.resize(boxRef.value.offsetWidth, boxRef.value.offsetHeight)
+                }       
             }
         }
 
@@ -79,6 +82,9 @@ export default defineComponent({
 
             if(scrollCtrl.midnav){
                 scrollCtrl.midnav.init()
+            }
+            if(scrollCtrl.scroll){
+                scrollCtrl.scroll.init()
             }
             
             updateMaxScroll()

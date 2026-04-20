@@ -12,7 +12,7 @@ export default {
 </script>
 
 <template lang="pug">
-EasyScroll(:midMouseNav="true", :joyStick="true")
+EasyScroll(:midMouseNav="true", :scrollJoy="false")
     //- template(#scroll_y="slotProps")
     //-     .div {{ slotProps }}
 </template>
