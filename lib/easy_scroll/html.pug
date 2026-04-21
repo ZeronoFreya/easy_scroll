@@ -5,7 +5,7 @@
         //-     :style="topHintStyle"
         //- ) hint_top
         .es_scroll_content(
-            ref="ulRef", :class="$attrs.class", 
+            ref="ulRef", :class="[$attrs.class, {smooth: scrollCtrl.scroll.active}]", 
             :style="{ transform: `translateY(${displayScrollY}px)` }"
         )
             li(v-for="i in 50" :key="i") 列表项 - {{ i }}
