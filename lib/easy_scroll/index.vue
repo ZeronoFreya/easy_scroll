@@ -32,6 +32,14 @@ export default defineComponent({
             velocity: 0,
             isWheelFreezing: false,
             isOverscrolling: false,
+            viewportSize: {
+                w: 0,
+                h: 0
+            },
+            contentSize: {
+                w: 0,
+                h: 0
+            }
         })
 
         const startLoop = () => {
@@ -63,8 +71,16 @@ export default defineComponent({
                     0,
                     boxRef.value.offsetHeight - ulRef.value.offsetHeight,
                 )     
+                runtimeData.viewportSize = {
+                    w: boxRef.value.offsetWidth,
+                    h: boxRef.value.offsetHeight,
+                }
+                runtimeData.contentSize = {
+                    w: ulRef.value.offsetWidth,
+                    h: ulRef.value.offsetHeight,
+                }
                 if(scrollCtrl.scroll){
-                    scrollCtrl.scroll.resize(boxRef.value.offsetWidth, boxRef.value.offsetHeight)
+                    scrollCtrl.scroll.resize()
                 }       
             }
         }
