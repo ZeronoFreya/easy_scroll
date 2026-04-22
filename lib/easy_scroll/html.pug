@@ -19,15 +19,17 @@
         slot(name="scroll_y", 
             scrollRatio="scrollRatio",
             isDragging="isDragging",
+            :scrollTop="scrollCtrl.scroll.itemY",
+            :thumbH="scrollCtrl.scroll.itemH",
             :onDrag="(e)=>scrollCtrl.scroll.track_down(e, 'y')"
         )        
             .es_track(track,
-                data-scroll="y",
                 @pointerdown.stop.prevent="scrollCtrl.scroll.track_down($event, 'y')"
             )
                 .es_track_view
                 .es_thumb(thumb, 
-                    :class="{joytick: scrollJoy, disanime: runtimeData.isDragging}"
+                    :class="{joytick: scrollJoy, disanime: runtimeData.isDragging}",
+                    :style="{height: `${scrollCtrl.scroll.itemH}px`, transform: `translate(-50%, ${scrollCtrl.scroll.itemY}px)`}"
                 )
                     .es_thumb_view  
     Cursor(v-if="scrollCtrl.midnav && scrollCtrl.midnav.active", 
