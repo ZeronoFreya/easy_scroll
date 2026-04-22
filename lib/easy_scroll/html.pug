@@ -18,11 +18,12 @@
     .es_scroll_bar.es_scroll_y(:ref="el=>scrollCtrl.scroll.scrollRef.y.box=el")
         slot(name="scroll_y", 
             scrollRatio="scrollRatio",
-            isDragging="isDragging"
+            isDragging="isDragging",
+            :onDrag="(e)=>scrollCtrl.scroll.track_down(e, 'y')"
         )        
             .es_track(track,
                 data-scroll="y",
-                @pointerdown.stop.prevent="scrollCtrl.scroll.track_down"
+                @pointerdown.stop.prevent="scrollCtrl.scroll.track_down($event, 'y')"
             )
                 .es_track_view
                 .es_thumb(thumb, 

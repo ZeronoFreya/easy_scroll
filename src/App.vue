@@ -13,13 +13,33 @@ export default {
 
 <template lang="pug">
 EasyScroll(:midMouseNav="true", :scrollJoy="false")
-    //- template(#scroll_y="slotProps")
-    //-     .div {{ slotProps }}
+    template(#scroll_y="slotProps")
+        .div 
+            .track(@pointerdown="slotProps.onDrag")
+                .thumb
 </template>
 
 <style lang="scss">
 #app {
     // background: #2f3130;
     padding: 30px;
+}
+.div {
+    position: fixed;
+    top: 100px;
+    left: 50vw;
+    width: 30px;
+    height: 300px;
+    
+    .track{
+        width: 100%;
+        height: 100%;
+        background: blue;
+    }
+    .thumb{
+        width: 100%;
+        height: 30px;
+        background: red;
+    }
 }
 </style>
