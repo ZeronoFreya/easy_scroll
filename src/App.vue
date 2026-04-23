@@ -13,10 +13,10 @@ export default {
 
 <template lang="pug">
 EasyScroll(:midMouseNav="true", :scrollJoy="false")
-    //- template(#scroll_y="slotProps")
-    //-     .div 
-    //-         .track(track, @pointerdown="slotProps.onDrag")
-    //-             .thumb(thumb, :style="{height: `${slotProps.thumbH}px`, transform: `translateY(${slotProps.scrollTop}px)`}")
+    template(#scroll_y="slotProps")
+        .div
+            .track(track)
+                .thumb(thumb, :style="{height: `${slotProps.thumb.height}px`, transform: `translateY(${slotProps.thumb.top}px)`}")
 </template>
 
 <style lang="scss">

@@ -19,6 +19,9 @@ export default defineComponent({
         const boxRef = ref(null)
         const ulRef = ref(null)
 
+        const controller = new AbortController()
+    const { signal } = controller
+
         const runtimeData = reactive({
             rafId: null,
             isDragging: false,
@@ -33,12 +36,12 @@ export default defineComponent({
             isWheelFreezing: false,
             isOverscrolling: false,
             viewportSize: {
-                w: 0,
-                h: 0
+                w: 1,
+                h: 1
             },
             contentSize: {
-                w: 0,
-                h: 0
+                w: 1,
+                h: 1
             }
         })
 
@@ -56,7 +59,7 @@ export default defineComponent({
 
         const scrollCtrl = reactive({
             wheel: useWheel(runtimeData, startLoop, props.overTip),
-            scroll: useScrollbar(runtimeData, startLoop, props.scrollJoy),
+            scroll: useScrollbar(runtimeData, startLoop, signal, props.scrollJoy),
             midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop) : null,
         })
 
@@ -94,7 +97,7 @@ export default defineComponent({
         })
 
         onMounted(() => {
-            boxRef.value.addEventListener('wheel', scrollCtrl.wheel.onWheel, { passive: true })
+            boxRef.value.addEventListener('wheel', scrollCtrl.wheel.onWheel, { signal, passive: true })
 
             if(scrollCtrl.midnav){
                 scrollCtrl.midnav.init()
@@ -110,6 +113,7 @@ export default defineComponent({
         })
 
         onBeforeUnmount(() => {
+            
             stopLoop();
             // if (freezeTimer) clearTimeout(freezeTimer)
             // window.removeEventListener('mousemove', onDrag)
@@ -123,6 +127,8 @@ export default defineComponent({
             observer.unobserve(ulRef.value)
             observer.unobserve(boxRef.value)
             observer.disconnect()
+
+            controller.abort()
         })
         return {
             runtimeData,
