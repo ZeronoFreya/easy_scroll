@@ -15,7 +15,7 @@ export default {
 EasyScroll(:midMouseNav="true", :scrollJoy="false")
     template(#scroll_y="slotProps")
         .div
-            .track(track)
+            .track(track, @pointerdown="slotProps.onDrag")
                 .thumb(thumb, :style="{height: `${slotProps.thumb.height}px`, transform: `translateY(${slotProps.thumb.top}px)`}")
 </template>
 

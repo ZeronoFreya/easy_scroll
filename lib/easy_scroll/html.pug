@@ -21,8 +21,9 @@
             :scrollRatio="scrollCtrl.scroll.scrollRatio",
             :sizeRatio="scrollCtrl.scroll.sizeRatio",
             :thumb="scrollCtrl.scroll.thumbRect.y",
+            :onDrag="(e)=>scrollCtrl.scroll.track_down(e, 'y')"
         )        
-            .es_track(track)
+            .es_track(track, @pointerdown="scrollCtrl.scroll.track_down($event, 'y')")
                 .es_track_view
                 .es_thumb(thumb, 
                     :class="{joytick: scrollJoy, disanime: runtimeData.isDragging}",
