@@ -1,23 +1,26 @@
 .es_scroll_containter
     .es_scroll_box(ref="boxRef")
-        //- .es_scroll_hint.es_hint_top(
-        //-     :class="{ active: topPullRatio > 1.0 }", 
-        //-     :style="topHintStyle"
-        //- ) hint_top
+        .es_scroll_hint.es_hint_top(
+            :class="{ active: scrollCtrl.hint.topPullRatio > 1.0 }", 
+            :style="scrollCtrl.hint.topHintStyle"
+        )
+            .icon 🔄
+            .text {{ scrollCtrl.hint.topPullRatio > 1.0 ? '释放刷新' : '下拉刷新' }}
         .es_scroll_content(
             ref="ulRef", :class="[$attrs.class, {smooth: scrollCtrl.scroll.active}]", 
             :style="{ transform: `translateY(${displayScrollY}px)` }"
         )
             li(v-for="i in 50" :key="i") 列表项 - {{ i }}
-        //- .es_scroll_hint.es_hint_bottom(
-        //-     :class="{ active: bottomPullRatio > 1.0 }", 
-        //-     :style="bottomHintStyle"
-        //- ) hint_bottom
+        .es_scroll_hint.es_hint_bottom(
+            :class="{ active: scrollCtrl.hint.bottomPullRatio > 1.0 }", 
+            :style="scrollCtrl.hint.bottomHintStyle"
+        )
+            .icon 🔄
+            .text {{ scrollCtrl.hint.bottomPullRatio > 1.0 ? '释放加载' : '上拉加载' }}
     //- ScrollBar(scroll="y", :data="scrollCtrl.scroll")
     //-     template(#default="slotProps")
     .es_scroll_bar.es_scroll_y(:ref="el=>scrollCtrl.scroll.scrollRef.y.box=el")
         slot(name="scroll_y", 
-            :isDragging="runtimeData.isDragging",
             :scrollRatio="scrollCtrl.scroll.scrollRatio",
             :sizeRatio="scrollCtrl.scroll.sizeRatio",
             :thumb="scrollCtrl.scroll.thumbRect.y",
@@ -26,7 +29,7 @@
             .es_track(track, @pointerdown="scrollCtrl.scroll.track_down($event, 'y')")
                 .es_track_view
                 .es_thumb(thumb, 
-                    :class="{joytick: scrollJoy, disanime: runtimeData.isDragging}",
+                    :class="{joytick: scrollJoy, disanime: runtimeData.currCtrlType == 'scrollbar'}",
                     :style="{height: `${scrollCtrl.scroll.thumbRect.y.height}px`, transform: `translate(-50%, ${scrollCtrl.scroll.thumbRect.y.top}px)`}"
                 )
                     .es_thumb_view  

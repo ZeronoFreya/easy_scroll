@@ -8,11 +8,12 @@ import Cursor from './cursor.vue'
 import useWheel from './use_wheel.js'
 import useScrollbar from './use_scrollbar.js'
 import useMidNav from './use_midnav.js'
+import useHint from './use_hint.js'
 
 import useLoop from './use_loop.js'
 
 export default defineComponent({
-    components: {Cursor},
+    components: { Cursor },
     inheritAttrs: false,
     props: sProps,
     setup(props) {
@@ -20,29 +21,33 @@ export default defineComponent({
         const ulRef = ref(null)
 
         const controller = new AbortController()
-    const { signal } = controller
+        const { signal } = controller
 
         const runtimeData = reactive({
             rafId: null,
-            isDragging: false,
-            isMiddleMouseActive: false,
+            // isDragging: false,
             inputSource: 'inertia',
-            maxScroll: 0,
+            currCtrlType: '',
             scroll: {
-                x: 0,
-                y: 0,
+                left: 0,
+                top: 0,
             },
+            maxScroll: {
+                left: 0,
+                top: 0,
+            },
+
             velocity: 0,
             isWheelFreezing: false,
             isOverscrolling: false,
             viewportSize: {
-                w: 1,
-                h: 1
+                w: 0,
+                h: 0,
             },
             contentSize: {
                 w: 1,
-                h: 1
-            }
+                h: 1,
+            },
         })
 
         const startLoop = () => {
@@ -52,28 +57,24 @@ export default defineComponent({
         }
         const stopLoop = () => {
             if (runtimeData.rafId) {
-                cancelAnimationFrame(runtimeData.rafId);
-                runtimeData.rafId = null;
+                cancelAnimationFrame(runtimeData.rafId)
+                runtimeData.rafId = null
             }
-        };
+        }
 
         const scrollCtrl = reactive({
             wheel: useWheel(runtimeData, startLoop, props.overTip),
             scroll: useScrollbar(runtimeData, startLoop, signal, props.scrollJoy),
             midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop) : null,
+            hint: useHint(runtimeData, startLoop)
         })
 
-        const physicsLoop = useLoop(runtimeData, scrollCtrl)    
-        
+        const physicsLoop = useLoop(runtimeData, scrollCtrl)
 
-        const displayScrollY = computed(() => runtimeData.scroll.y.toFixed(2))
+        const displayScrollY = computed(() => runtimeData.scroll.top.toFixed(2))
 
-        const updateMaxScroll = ()=>{
+        const updateMaxScroll = () => {
             if (ulRef.value && boxRef.value) {
-                runtimeData.maxScroll = Math.min(
-                    0,
-                    boxRef.value.offsetHeight - ulRef.value.offsetHeight,
-                )     
                 runtimeData.viewportSize = {
                     w: boxRef.value.offsetWidth,
                     h: boxRef.value.offsetHeight,
@@ -82,9 +83,15 @@ export default defineComponent({
                     w: ulRef.value.offsetWidth,
                     h: ulRef.value.offsetHeight,
                 }
-                if(scrollCtrl.scroll){
+
+                runtimeData.maxScroll.left = runtimeData.contentSize.w - runtimeData.viewportSize.w
+                runtimeData.maxScroll.top = runtimeData.contentSize.h - runtimeData.viewportSize.h
+                // runtimeData.maxScroll.left = runtimeData.viewportSize.w - runtimeData.contentSize.w
+                // runtimeData.maxScroll.top = runtimeData.viewportSize.h - runtimeData.contentSize.h
+
+                if (scrollCtrl.scroll) {
                     scrollCtrl.scroll.resize()
-                }       
+                }
             }
         }
 
@@ -93,28 +100,28 @@ export default defineComponent({
         }
         const observer = new ResizeObserver(() => {
             updateMaxScroll()
-
         })
 
         onMounted(() => {
-            boxRef.value.addEventListener('wheel', scrollCtrl.wheel.onWheel, { signal, passive: true })
+            boxRef.value.addEventListener('wheel', scrollCtrl.wheel.onWheel, {
+                signal,
+                passive: true,
+            })
 
-            if(scrollCtrl.midnav){
+            if (scrollCtrl.midnav) {
                 scrollCtrl.midnav.init()
             }
-            if(scrollCtrl.scroll){
+            if (scrollCtrl.scroll) {
                 scrollCtrl.scroll.init()
             }
-            
+
             updateMaxScroll()
             observer.observe(boxRef.value, options)
             observer.observe(ulRef.value, options)
-
         })
 
         onBeforeUnmount(() => {
-            
-            stopLoop();
+            stopLoop()
             // if (freezeTimer) clearTimeout(freezeTimer)
             // window.removeEventListener('mousemove', onDrag)
             // window.removeEventListener('mouseup', endDrag)
