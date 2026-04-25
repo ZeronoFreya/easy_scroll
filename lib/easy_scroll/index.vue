@@ -1,6 +1,7 @@
 <script>
-import { defineComponent, ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
+import { defineComponent, ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import sProps from './props.js'
+import { clamp, safeDivide } from './utils.js'
 
 import Cursor from './cursor.vue'
 // import ScrollBar from './scrollbar.vue'
@@ -25,20 +26,18 @@ export default defineComponent({
 
         const runtimeData = reactive({
             rafId: null,
-            // isDragging: false,
-            inputSource: 'inertia',
+            // inputSource: 'inertia',
             currCtrlType: '',
             scroll: {
-                left: 0,
-                top: 0,
+                x: 0,
+                y: 0,
             },
             maxScroll: {
-                left: 0,
-                top: 0,
+                x: 0,
+                y: 0,
             },
-
             velocity: 0,
-            isWheelFreezing: false,
+            // isWheelFreezing: false,
             isOverscrolling: false,
             viewportSize: {
                 w: 0,
@@ -48,7 +47,33 @@ export default defineComponent({
                 w: 1,
                 h: 1,
             },
+            // viewportSize / contentSize
+            sizeRatio: {
+                x: 0,
+                y: 0
+            },
+            // 滚动进度: 当前滚动位置与最大滚动位置的比值
+            progress: {
+                x: 0,
+                y: 0
+            },
+            
         })
+
+        watch(() => [runtimeData.scroll.x, runtimeData.maxScroll.x], ([left, max]) => {
+            runtimeData.progress.x = safeDivide(Math.abs(left), max)
+            if (scrollCtrl.scroll) {
+                scrollCtrl.scroll.updateScrollPos('x')
+            }
+        })
+        watch(() => [runtimeData.scroll.y, runtimeData.maxScroll.y], ([top, max]) => {
+            runtimeData.progress.y = safeDivide(Math.abs(top), max)
+            if (scrollCtrl.scroll) {
+                scrollCtrl.scroll.updateScrollPos('y')
+            }
+        })
+
+      
 
         const startLoop = () => {
             if (!runtimeData.rafId) {
@@ -63,15 +88,18 @@ export default defineComponent({
         }
 
         const scrollCtrl = reactive({
-            wheel: useWheel(runtimeData, startLoop, props.overTip),
+            wheel: useWheel(runtimeData, startLoop, props.showHint),
             scroll: useScrollbar(runtimeData, startLoop, signal, props.scrollJoy),
             midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop) : null,
-            hint: useHint(runtimeData, startLoop)
+
         })
 
-        const physicsLoop = useLoop(runtimeData, scrollCtrl)
+        const hint = ref(props.showHint ? useHint(runtimeData, startLoop) : null)
 
-        const displayScrollY = computed(() => runtimeData.scroll.top.toFixed(2))
+
+        const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)
+
+        const displayScrollY = computed(() => runtimeData.scroll.y.toFixed(2))
 
         const updateMaxScroll = () => {
             if (ulRef.value && boxRef.value) {
@@ -84,10 +112,12 @@ export default defineComponent({
                     h: ulRef.value.offsetHeight,
                 }
 
-                runtimeData.maxScroll.left = runtimeData.contentSize.w - runtimeData.viewportSize.w
-                runtimeData.maxScroll.top = runtimeData.contentSize.h - runtimeData.viewportSize.h
-                // runtimeData.maxScroll.left = runtimeData.viewportSize.w - runtimeData.contentSize.w
-                // runtimeData.maxScroll.top = runtimeData.viewportSize.h - runtimeData.contentSize.h
+                runtimeData.sizeRatio.x = safeDivide(runtimeData.viewportSize.w, runtimeData.contentSize.w)
+                runtimeData.sizeRatio.y = safeDivide(runtimeData.viewportSize.h, runtimeData.contentSize.h)
+
+                runtimeData.maxScroll.x = runtimeData.contentSize.w - runtimeData.viewportSize.w
+                runtimeData.maxScroll.y = runtimeData.contentSize.h - runtimeData.viewportSize.h
+                
 
                 if (scrollCtrl.scroll) {
                     scrollCtrl.scroll.resize()
@@ -140,6 +170,7 @@ export default defineComponent({
         return {
             runtimeData,
             scrollCtrl,
+            hint,
             boxRef,
             ulRef,
             displayScrollY,

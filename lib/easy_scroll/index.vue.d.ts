@@ -28,7 +28,7 @@ declare const _default: import('vue').DefineComponent<
          * 是否使用过界提示
          * @default false
          */
-        overTip?: boolean
+        showHint?: boolean
     },
     {
         /**

@@ -1,24 +1,22 @@
 .es_scroll_containter
     .es_scroll_box(ref="boxRef")
-        .es_scroll_hint.es_hint_top(
-            :class="{ active: scrollCtrl.hint.topPullRatio > 1.0 }", 
-            :style="scrollCtrl.hint.topHintStyle"
+        .es_scroll_hint.es_hint_top(v-if="showHint",
+            :class="{ active: hint.topPullRatio > 1.0 }", 
+            :style="hint.topHintStyle"
         )
             .icon 🔄
-            .text {{ scrollCtrl.hint.topPullRatio > 1.0 ? '释放刷新' : '下拉刷新' }}
+            .text {{ hint.topPullRatio > 1.0 ? '释放刷新' : '下拉刷新' }}
         .es_scroll_content(
             ref="ulRef", :class="[$attrs.class, {smooth: scrollCtrl.scroll.active}]", 
             :style="{ transform: `translateY(${displayScrollY}px)` }"
         )
             li(v-for="i in 50" :key="i") 列表项 - {{ i }}
-        .es_scroll_hint.es_hint_bottom(
-            :class="{ active: scrollCtrl.hint.bottomPullRatio > 1.0 }", 
-            :style="scrollCtrl.hint.bottomHintStyle"
+        .es_scroll_hint.es_hint_bottom(v-if="showHint",
+            :class="{ active: hint.bottomPullRatio > 1.0 }", 
+            :style="hint.bottomHintStyle"
         )
             .icon 🔄
-            .text {{ scrollCtrl.hint.bottomPullRatio > 1.0 ? '释放加载' : '上拉加载' }}
-    //- ScrollBar(scroll="y", :data="scrollCtrl.scroll")
-    //-     template(#default="slotProps")
+            .text {{ hint.bottomPullRatio > 1.0 ? '释放加载' : '上拉加载' }}
     .es_scroll_bar.es_scroll_y(:ref="el=>scrollCtrl.scroll.scrollRef.y.box=el")
         slot(name="scroll_y", 
             :scrollRatio="scrollCtrl.scroll.scrollRatio",
@@ -30,7 +28,7 @@
                 .es_track_view
                 .es_thumb(thumb, 
                     :class="{joytick: scrollJoy, disanime: runtimeData.currCtrlType == 'scrollbar'}",
-                    :style="{height: `${scrollCtrl.scroll.thumbRect.y.height}px`, transform: `translate(-50%, ${scrollCtrl.scroll.thumbRect.y.top}px)`}"
+                    :style="{height: `${scrollCtrl.scroll.thumbRect.y.height}px`, transform: `translate(-50%, ${scrollCtrl.scroll.thumbRect.y.pos}px)`}"
                 )
                     .es_thumb_view  
     Cursor(v-if="scrollCtrl.midnav && scrollCtrl.midnav.active", 
