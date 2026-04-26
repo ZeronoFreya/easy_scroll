@@ -57,23 +57,12 @@ export default defineComponent({
                 x: 0,
                 y: 0
             },
-            
+
         })
 
-        watch(() => [runtimeData.scroll.x, runtimeData.maxScroll.x], ([left, max]) => {
-            runtimeData.progress.x = safeDivide(Math.abs(left), max)
-            if (scrollCtrl.scroll) {
-                scrollCtrl.scroll.updateScrollPos('x')
-            }
-        })
-        watch(() => [runtimeData.scroll.y, runtimeData.maxScroll.y], ([top, max]) => {
-            runtimeData.progress.y = safeDivide(Math.abs(top), max)
-            if (scrollCtrl.scroll) {
-                scrollCtrl.scroll.updateScrollPos('y')
-            }
-        })
 
-      
+
+
 
         const startLoop = () => {
             if (!runtimeData.rafId) {
@@ -94,7 +83,7 @@ export default defineComponent({
 
         })
 
-        const hint = ref(props.showHint ? useHint(runtimeData, startLoop) : null)
+        const hint = props.showHint ? reactive(useHint(runtimeData, startLoop)) : null
 
 
         const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)
@@ -117,13 +106,26 @@ export default defineComponent({
 
                 runtimeData.maxScroll.x = runtimeData.contentSize.w - runtimeData.viewportSize.w
                 runtimeData.maxScroll.y = runtimeData.contentSize.h - runtimeData.viewportSize.h
-                
+
 
                 if (scrollCtrl.scroll) {
                     scrollCtrl.scroll.resize()
                 }
             }
         }
+
+        watch(() => [runtimeData.scroll.x, runtimeData.maxScroll.x], ([left, max]) => {
+            runtimeData.progress.x = safeDivide(Math.abs(left), max)
+            if (scrollCtrl.scroll) {
+                scrollCtrl.scroll.updateScrollPos('x')
+            }
+        })
+        watch(() => [runtimeData.scroll.y, runtimeData.maxScroll.y], ([top, max]) => {
+            runtimeData.progress.y = safeDivide(Math.abs(top), max)
+            if (scrollCtrl.scroll) {
+                scrollCtrl.scroll.updateScrollPos('y')
+            }
+        })
 
         const options = {
             box: 'border-box', // 确保 CSS 计算尺寸时包括边框和内边距
