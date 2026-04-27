@@ -1,3 +1,7 @@
+.es_smooth_scroll{
+    will-change: transform;
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
 .es_scroll_containter {
     position: relative;
     display: flex;
@@ -28,9 +32,10 @@
         background-color: var(--box-bg);
         position: relative;
         z-index: 1;
-        &.smooth {
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        
+        // &.smooth {
+        //     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        // }
     }
     li {
         height: 50px;
@@ -116,6 +121,8 @@
     overflow: hidden;
     will-change: height;
     // transition: height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    // will-change: transform;
+    transition: height 0.5s cubic-bezier(0.23, 1, 0.32, 1);
 
     .icon {
         font-size: 24px;

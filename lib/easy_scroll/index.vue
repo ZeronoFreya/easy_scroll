@@ -76,14 +76,16 @@ export default defineComponent({
             }
         }
 
+        const hint = props.showHint ? reactive(useHint(runtimeData, startLoop)) : null
+        
         const scrollCtrl = reactive({
             wheel: useWheel(runtimeData, startLoop, props.showHint),
-            scroll: useScrollbar(runtimeData, startLoop, signal, props.scrollJoy),
+            scroll: useScrollbar(runtimeData, startLoop, signal, props.scrollJoy, hint),
             midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop) : null,
 
         })
 
-        const hint = props.showHint ? reactive(useHint(runtimeData, startLoop)) : null
+        
 
 
         const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)

@@ -6,8 +6,8 @@
         )
             .icon 🔄
             .text {{ hint.topPullRatio > 1.0 ? '释放刷新' : '下拉刷新' }}
-        .es_scroll_content(
-            ref="ulRef", :class="[$attrs.class, {smooth: scrollCtrl.scroll.active}]", 
+        .es_scroll_content.es_smooth_scroll(
+            ref="ulRef", :class="[$attrs.class, {smooth2: scrollCtrl.scroll.active}]", 
             :style="{ transform: `translateY(${displayScrollY}px)` }"
         )
             li(v-for="i in 50" :key="i") 列表项 - {{ i }}
@@ -26,7 +26,7 @@
         )        
             .es_track(track, @pointerdown="scrollCtrl.scroll.track_down($event, 'y')")
                 .es_track_view
-                .es_thumb(thumb, 
+                .es_thumb.es_smooth_scroll(thumb, 
                     :class="{joytick: scrollJoy, disanime: runtimeData.currCtrlType == 'scrollbar'}",
                     :style="{height: `${scrollCtrl.scroll.thumbRect.y.height}px`, transform: `translate(-50%, ${scrollCtrl.scroll.thumbRect.y.pos}px)`}"
                 )
