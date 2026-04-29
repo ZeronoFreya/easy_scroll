@@ -1,9 +1,10 @@
 <script>
-import { defineComponent, ref, reactive, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { defineComponent, ref, reactive, provide, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import sProps from './props.js'
 import { clamp, safeDivide } from './utils.js'
 
 import Cursor from './cursor.vue'
+import Hint from './hint.vue'
 // import ScrollBar from './scrollbar.vue'
 
 import useWheel from './use_wheel.js'
@@ -14,7 +15,7 @@ import useHint from './use_hint.js'
 import useLoop from './use_loop.js'
 
 export default defineComponent({
-    components: { Cursor },
+    components: { Cursor, Hint },
     inheritAttrs: false,
     props: sProps,
     setup(props) {
@@ -26,6 +27,7 @@ export default defineComponent({
 
         const runtimeData = reactive({
             rafId: null,
+            draging: false,
             // inputSource: 'inertia',
             currCtrlType: '',
             scroll: {
@@ -60,7 +62,7 @@ export default defineComponent({
 
         })
 
-
+        provide("runtimeData", runtimeData)
 
 
 
@@ -77,11 +79,12 @@ export default defineComponent({
         }
 
         const hint = props.showHint ? reactive(useHint(runtimeData, startLoop)) : null
+        provide("hint", hint)
         
         const scrollCtrl = reactive({
             wheel: useWheel(runtimeData, startLoop, props.showHint),
             scroll: useScrollbar(runtimeData, startLoop, signal, props.scrollJoy, hint),
-            midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop) : null,
+            midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop, hint) : null,
 
         })
 
@@ -113,19 +116,29 @@ export default defineComponent({
                 if (scrollCtrl.scroll) {
                     scrollCtrl.scroll.resize()
                 }
+
+                if(hint){
+                    hint.resize()
+                }
             }
         }
 
         watch(() => [runtimeData.scroll.x, runtimeData.maxScroll.x], ([left, max]) => {
-            runtimeData.progress.x = safeDivide(Math.abs(left), max)
+            runtimeData.progress.x = safeDivide(-left, max)
             if (scrollCtrl.scroll) {
                 scrollCtrl.scroll.updateScrollPos('x')
             }
+            if(hint){
+                hint.update('x')
+            }
         })
         watch(() => [runtimeData.scroll.y, runtimeData.maxScroll.y], ([top, max]) => {
-            runtimeData.progress.y = safeDivide(Math.abs(top), max)
+            runtimeData.progress.y = safeDivide(-top, max)
             if (scrollCtrl.scroll) {
                 scrollCtrl.scroll.updateScrollPos('y')
+            }
+            if(hint){
+                hint.update('y')
             }
         })
 

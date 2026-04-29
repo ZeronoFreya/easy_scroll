@@ -1,22 +1,12 @@
 .es_scroll_containter
     .es_scroll_box(ref="boxRef")
-        .es_scroll_hint.es_hint_top(v-if="showHint",
-            :class="{ active: hint.topPullRatio > 1.0 }", 
-            :style="hint.topHintStyle"
-        )
-            .icon 🔄
-            .text {{ hint.topPullRatio > 1.0 ? '释放刷新' : '下拉刷新' }}
+        Hint(v-if="showHint")
         .es_scroll_content.es_smooth_scroll(
-            ref="ulRef", :class="[$attrs.class, {smooth2: scrollCtrl.scroll.active}]", 
+            ref="ulRef", :class="[$attrs.class, {es_back_scroll: scrollCtrl.scroll.back}]", 
             :style="{ transform: `translateY(${displayScrollY}px)` }"
         )
             li(v-for="i in 50" :key="i") 列表项 - {{ i }}
-        .es_scroll_hint.es_hint_bottom(v-if="showHint",
-            :class="{ active: hint.bottomPullRatio > 1.0 }", 
-            :style="hint.bottomHintStyle"
-        )
-            .icon 🔄
-            .text {{ hint.bottomPullRatio > 1.0 ? '释放加载' : '上拉加载' }}
+        
     .es_scroll_bar.es_scroll_y(:ref="el=>scrollCtrl.scroll.scrollRef.y.box=el")
         slot(name="scroll_y", 
             :scrollRatio="scrollCtrl.scroll.scrollRatio",
@@ -27,7 +17,7 @@
             .es_track(track, @pointerdown="scrollCtrl.scroll.track_down($event, 'y')")
                 .es_track_view
                 .es_thumb.es_smooth_scroll(thumb, 
-                    :class="{joytick: scrollJoy, disanime: runtimeData.currCtrlType == 'scrollbar'}",
+                    :class="{joytick: scrollJoy, disanime: runtimeData.currCtrlType == 'scrollbar', es_back_scroll: scrollCtrl.scroll.back}",
                     :style="{height: `${scrollCtrl.scroll.thumbRect.y.height}px`, transform: `translate(-50%, ${scrollCtrl.scroll.thumbRect.y.pos}px)`}"
                 )
                     .es_thumb_view  
