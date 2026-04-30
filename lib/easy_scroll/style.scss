@@ -3,7 +3,8 @@
     transition: transform 1s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .es_back_scroll{
-    // will-change: transform;
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform;
     // transition: none;
     // animation: realHit 0.6s steps(30);
     // animation: dropAndBounce 0.7s cubic-bezier(0.4, 0, 0.6, 1);
@@ -96,7 +97,8 @@
         position: absolute;
         // transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         &.disanime {
-            transition: none;
+            // transition: none;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
         }
     }
     .es_thumb_view {

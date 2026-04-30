@@ -1,5 +1,15 @@
 <script>
-import { defineComponent, ref, reactive, provide, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import {
+    defineComponent,
+    useSlots,
+    ref,
+    reactive,
+    provide,
+    computed,
+    watch,
+    onMounted,
+    onBeforeUnmount,
+} from 'vue'
 import sProps from './props.js'
 import { clamp, safeDivide } from './utils.js'
 
@@ -52,19 +62,24 @@ export default defineComponent({
             // viewportSize / contentSize
             sizeRatio: {
                 x: 0,
-                y: 0
+                y: 0,
             },
             // 滚动进度: 当前滚动位置与最大滚动位置的比值
             progress: {
                 x: 0,
-                y: 0
+                y: 0,
             },
-
         })
 
-        provide("runtimeData", runtimeData)
+        provide('runtimeData', runtimeData)
 
-
+        const slots = useSlots()
+        // 工具函数：过滤插槽
+        const filterSlots = (prefix) => {
+            return Object.fromEntries(
+                Object.entries(slots).filter(([name]) => name.startsWith(prefix)),
+            )
+        }
 
         const startLoop = () => {
             if (!runtimeData.rafId) {
@@ -79,17 +94,13 @@ export default defineComponent({
         }
 
         const hint = props.showHint ? reactive(useHint(runtimeData, startLoop)) : null
-        provide("hint", hint)
-        
+        provide('hint', hint)
+
         const scrollCtrl = reactive({
-            wheel: useWheel(runtimeData, startLoop, props.showHint),
+            wheel: useWheel(runtimeData, startLoop, hint),
             scroll: useScrollbar(runtimeData, startLoop, signal, props.scrollJoy, hint),
             midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop, hint) : null,
-
         })
-
-        
-
 
         const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)
 
@@ -106,41 +117,52 @@ export default defineComponent({
                     h: ulRef.value.offsetHeight,
                 }
 
-                runtimeData.sizeRatio.x = safeDivide(runtimeData.viewportSize.w, runtimeData.contentSize.w)
-                runtimeData.sizeRatio.y = safeDivide(runtimeData.viewportSize.h, runtimeData.contentSize.h)
+                runtimeData.sizeRatio.x = safeDivide(
+                    runtimeData.viewportSize.w,
+                    runtimeData.contentSize.w,
+                )
+                runtimeData.sizeRatio.y = safeDivide(
+                    runtimeData.viewportSize.h,
+                    runtimeData.contentSize.h,
+                )
 
                 runtimeData.maxScroll.x = runtimeData.contentSize.w - runtimeData.viewportSize.w
                 runtimeData.maxScroll.y = runtimeData.contentSize.h - runtimeData.viewportSize.h
-
 
                 if (scrollCtrl.scroll) {
                     scrollCtrl.scroll.resize()
                 }
 
-                if(hint){
+                if (hint) {
                     hint.resize()
                 }
             }
         }
 
-        watch(() => [runtimeData.scroll.x, runtimeData.maxScroll.x], ([left, max]) => {
-            runtimeData.progress.x = safeDivide(-left, max)
-            if (scrollCtrl.scroll) {
-                scrollCtrl.scroll.updateScrollPos('x')
-            }
-            if(hint){
-                hint.update('x')
-            }
-        })
-        watch(() => [runtimeData.scroll.y, runtimeData.maxScroll.y], ([top, max]) => {
-            runtimeData.progress.y = safeDivide(-top, max)
-            if (scrollCtrl.scroll) {
-                scrollCtrl.scroll.updateScrollPos('y')
-            }
-            if(hint){
-                hint.update('y')
-            }
-        })
+        watch(
+            () => [runtimeData.scroll.x, runtimeData.maxScroll.x],
+            ([left, max]) => {
+                runtimeData.progress.x = safeDivide(-left, max)
+                if (scrollCtrl.scroll) {
+                    scrollCtrl.scroll.updateScrollPos('x')
+                }
+                if (hint) {
+                    hint.update('x')
+                }
+            },
+        )
+        watch(
+            () => [runtimeData.scroll.y, runtimeData.maxScroll.y],
+            ([top, max]) => {
+                runtimeData.progress.y = safeDivide(-top, max)
+                if (scrollCtrl.scroll) {
+                    scrollCtrl.scroll.updateScrollPos('y')
+                }
+                if (hint) {
+                    hint.update('y')
+                }
+            },
+        )
 
         const options = {
             box: 'border-box', // 确保 CSS 计算尺寸时包括边框和内边距
@@ -191,6 +213,7 @@ export default defineComponent({
             boxRef,
             ulRef,
             displayScrollY,
+            filterSlots,
         }
     },
 })
