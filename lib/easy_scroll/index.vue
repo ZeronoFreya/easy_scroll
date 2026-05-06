@@ -50,7 +50,7 @@ export default defineComponent({
             },
             velocity: 0,
             // isWheelFreezing: false,
-            isOverscrolling: false,
+            // isOverscrolling: false,
             viewportSize: {
                 w: 0,
                 h: 0,

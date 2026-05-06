@@ -5,14 +5,32 @@ export default defineComponent({
     setup() {
         const hint = inject('hint')
         const runtimeData = inject('runtimeData')     
-        
-        const isPaused = ref(false)
+            
+        const hintX = computed(()=>{
+            if(runtimeData.scroll.y >= 0){
+                return 'before'
+            }else if(runtimeData.scroll.y <= -runtimeData.maxScroll.y){
+                return 'after'
+            }
+            return ''
+        })
+        const hintY = computed(()=>{
+            if(runtimeData.scroll.x >= 0){
+                return 'before'
+            }else if(runtimeData.scroll.x <= -runtimeData.maxScroll.x){
+                return 'after'
+            }
+            return ''
+        })
 
-        const isPlaying = computed(()=>{
-            return !isPaused.value && hint.pullRatio.y.before > 1.0
-        })       
+        const mouseenter = ()=>{
+            hint.countdown.y.run = false
+        }
+        const mouseleave = ()=>{              
+            runtimeData.scroll.y = 0
+        }
 
-        return { hint, runtimeData, isPlaying, isPaused }
+        return { hint, hintX, hintY, runtimeData, mouseenter, mouseleave }
     },
 })
 </script>
@@ -21,14 +39,15 @@ export default defineComponent({
 .es_scroll_hint.es_hint_top(
     :class="{ active: hint.pullRatio.y.before > 1.0 }", 
     :style="{ height: hint.size.y.before + 'px' }",
-    @mouseenter="isPaused=true",
-    @mouseleave="isPaused=false",
+    @mouseenter="mouseenter",
+    @mouseleave="mouseleave",
 )
-    .es_countdown_bar
+    .es_countdown_bar(:class="{show: hintY == 'before'}")
         .es_progress_fill(
             :key="hint.countdown.y.key",
-            :class="{ es_progress_run: isPlaying }",            
-            @animationend="hint.countdownEnd"
+            :class="{ es_progress_run: hint.countdown.y.run }",            
+            @animationstart="hint.countdownStart",
+            @animationend="hint.countdownEnd",
         )
     slot(name="hint_top")
         .es_hint_content
@@ -39,6 +58,13 @@ export default defineComponent({
     :class="{ active: hint.pullRatio.y.after > 1.0 }", 
     :style="{height: hint.size.y.after + 'px'}"
 )
+    .es_countdown_bar(:class="{show: hintY == 'after'}")
+        .es_progress_fill(
+            :key="hint.countdown.y.key",
+            :class="{ es_progress_run: hint.countdown.y.run }",            
+            @animationstart="hint.countdownStart",
+            @animationend="hint.countdownEnd",
+        )
     slot(name="hint_bottom")
         .es_hint_content
             .icon 🔄
@@ -67,6 +93,11 @@ export default defineComponent({
     .es_countdown_bar {
         position: absolute;
         pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.6s;
+        &.show{
+            opacity: 1;
+        }
     }
     .es_progress_fill {
         animation: shrink 2s linear forwards;
@@ -136,6 +167,21 @@ export default defineComponent({
         border-top: 1px solid rgba(59, 130, 246, 0.1);
         &.active .icon {
             transform: rotate(-180deg) scale(1.2);
+        }
+
+        .es_countdown_bar {
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: fit-content;
+            padding: 5px;
+        }
+        .es_progress_fill {
+            width: 100%;
+            height: 3px;
+            border-radius: 3px;
+            background: #3b82f6;
+            opacity: 0.6;
         }
     }
 }
