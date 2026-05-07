@@ -98,7 +98,7 @@ export default defineComponent({
 
         const scrollCtrl = reactive({
             wheel: useWheel(runtimeData, startLoop, hint),
-            scroll: useScrollbar(runtimeData, startLoop, signal, props.scrollJoy, hint),
+            scroll: props.scrollBar ? useScrollbar(runtimeData, startLoop, signal, props.scrollJoy, hint): null,
             midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop, hint) : null,
         })
 

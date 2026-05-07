@@ -1,10 +1,9 @@
-.es_smooth_scroll{
-    will-change: transform;
+.es_smooth_scroll {
     transition: transform 1s cubic-bezier(0.23, 1, 0.32, 1);
 }
-.es_back_scroll{
-    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    will-change: transform;
+.es_back_scroll {
+    // transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
     // transition: none;
     // animation: realHit 0.6s steps(30);
     // animation: dropAndBounce 0.7s cubic-bezier(0.4, 0, 0.6, 1);
@@ -17,18 +16,17 @@
 //     30% { transform: translateY(0); }
 //     55% { transform: translateY(5%); }
 //     65% { transform: translateY(0); }        /* 💥 第一次撞击 */
-    
+
 //     /* 反弹（速度损失约40%） */
 //     75% { transform: translateY(40px); }    /* 弹起高度变低 */
 //     85% { transform: translateY(0); }        /* 💥 第二次撞击 */
-    
+
 //     /* 二次反弹 */
 //     91% { transform: translateY(12px); }
 //     96% { transform: translateY(0); }        /* 💥 第三次撞击 */
-    
+
 //     100% { transform: translateY(0); }
 // }
-
 
 .es_scroll_containter {
     position: relative;
@@ -61,7 +59,7 @@
         position: relative;
         z-index: 1;
         background: #f0f0f0;
-        
+
         // &.smooth {
         //     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         // }
@@ -80,8 +78,11 @@
 }
 
 .es_scroll_bar {
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-thumb-hover: #94a3b8;
+    --scrollbar-thumb-active: #3b82f6;
     position: absolute;
-    background: goldenrod;
+    background: transparent;
     z-index: 2;
     .es_track {
         position: relative;
@@ -91,24 +92,44 @@
     .es_track_view {
         width: 100%;
         height: 100%;
-        background: red;
+        border-radius: 7px;
+        background-color: transparent;
+        transition: background-color 0.2s;
     }
     .es_thumb {
+        will-change: transform;
         position: absolute;
         // transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        &.disanime {
+        &.dragging {
             // transition: none;
             transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            .es_thumb_view{
+                background-color: var(--scrollbar-thumb-active);
+            }
         }
     }
     .es_thumb_view {
         pointer-events: none;
-        background: greenyellow;
+        // background: greenyellow;
+        background-color: var(--scrollbar-thumb);
+        border-radius: 4px;
+        transition: background-color 0.2s;
+        
     }
+
+    &:hover {
+        .es_track_view {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+        .es_thumb_view {
+            background-color: var(--scrollbar-thumb-hover);
+        }
+    }
+
     &.es_scroll_y {
         top: 0;
         right: 0;
-        width: 30px;
+        width: 20px;
         height: 100%;
         .es_track {
             padding: 0 5px;
@@ -134,5 +155,3 @@
         }
     }
 }
-
-

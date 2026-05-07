@@ -4,33 +4,13 @@ import { defineComponent, ref, inject, computed } from 'vue'
 export default defineComponent({
     setup() {
         const hint = inject('hint')
-        const runtimeData = inject('runtimeData')     
-            
-        const hintX = computed(()=>{
-            if(runtimeData.scroll.y >= 0){
-                return 'before'
-            }else if(runtimeData.scroll.y <= -runtimeData.maxScroll.y){
-                return 'after'
-            }
-            return ''
-        })
-        const hintY = computed(()=>{
-            if(runtimeData.scroll.x >= 0){
-                return 'before'
-            }else if(runtimeData.scroll.x <= -runtimeData.maxScroll.x){
-                return 'after'
-            }
-            return ''
-        })
+        const runtimeData = inject('runtimeData')   
 
         const mouseenter = ()=>{
             hint.countdown.y.run = false
         }
-        const mouseleave = ()=>{              
-            runtimeData.scroll.y = 0
-        }
 
-        return { hint, hintX, hintY, runtimeData, mouseenter, mouseleave }
+        return { hint, runtimeData, mouseenter }
     },
 })
 </script>
@@ -40,10 +20,11 @@ export default defineComponent({
     :class="{ active: hint.pullRatio.y.before > 1.0 }", 
     :style="{ height: hint.size.y.before + 'px' }",
     @mouseenter="mouseenter",
-    @mouseleave="mouseleave",
+    @mouseleave="hint.countdownEnd",
 )
-    .es_countdown_bar(:class="{show: hintY == 'before'}")
+    .es_countdown_bar(:class="{show: hint.size.y.before > 0}")
         .es_progress_fill(
+            v-if="hint.size.y.before > 0",
             :key="hint.countdown.y.key",
             :class="{ es_progress_run: hint.countdown.y.run }",            
             @animationstart="hint.countdownStart",
@@ -56,10 +37,13 @@ export default defineComponent({
             .text(v-else) {{ hint.pullRatio.y.before > 1.0 ? 'A' : 'B' }}    
 .es_scroll_hint.es_hint_bottom(
     :class="{ active: hint.pullRatio.y.after > 1.0 }", 
-    :style="{height: hint.size.y.after + 'px'}"
+    :style="{height: hint.size.y.after + 'px'}",
+    @mouseenter="mouseenter",
+    @mouseleave="hint.countdownEnd",
 )
-    .es_countdown_bar(:class="{show: hintY == 'after'}")
+    .es_countdown_bar(:class="{show: hint.size.y.after > 0}")
         .es_progress_fill(
+            v-if="hint.size.y.after > 0",
             :key="hint.countdown.y.key",
             :class="{ es_progress_run: hint.countdown.y.run }",            
             @animationstart="hint.countdownStart",
@@ -97,14 +81,17 @@ export default defineComponent({
         transition: opacity 0.6s;
         &.show{
             opacity: 1;
+            .es_progress_run {
+                animation-play-state: running;
+            }
         }
     }
     .es_progress_fill {
         animation: shrink 2s linear forwards;
         animation-play-state: paused;
-        &.es_progress_run {
-            animation-play-state: running;
-        }
+        // &.es_progress_run {
+        //     animation-play-state: running;
+        // }
     }
 
     .es_hint_content {

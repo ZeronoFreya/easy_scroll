@@ -19,7 +19,7 @@
             .es_track(track, @pointerdown="scrollCtrl.scroll.track_down($event, 'y')")
                 .es_track_view
                 .es_thumb.es_smooth_scroll(thumb, 
-                    :class="{joytick: scrollJoy, disanime: runtimeData.draging, es_back_scroll: scrollCtrl.scroll.back}",
+                    :class="{joytick: scrollJoy, dragging: runtimeData.draging, es_back_scroll: scrollCtrl.scroll.back}",
                     :style="{height: `${scrollCtrl.scroll.thumbRect.y.height}px`, transform: `translate(-50%, ${scrollCtrl.scroll.thumbRect.y.pos}px)`}"
                 )
                     .es_thumb_view  
