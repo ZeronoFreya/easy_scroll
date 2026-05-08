@@ -12,7 +12,7 @@ export default {
 </script>
 
 <template lang="pug">
-EasyScroll(:midMouseNav="true", :scrollJoy="true", :showHint="true")
+EasyScroll(:midMouseNav="true", :scrollJoy="!true", :showHint="!true")
     //- template(#hint_top="slotProps")
     //-     .xxx {{slotProps}}
     //- template(#scroll_y="slotProps")

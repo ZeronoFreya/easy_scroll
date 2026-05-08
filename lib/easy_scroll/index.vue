@@ -23,6 +23,7 @@ import useMidNav from './use_midnav.js'
 import useHint from './use_hint.js'
 
 import useLoop from './use_loop.js'
+import useAutoResetBool from './use_auto_reset_bool.js'
 
 export default defineComponent({
     components: { Cursor, Hint },
@@ -38,8 +39,14 @@ export default defineComponent({
         const runtimeData = reactive({
             rafId: null,
             draging: false,
+            back: useAutoResetBool(300),
             // inputSource: 'inertia',
             currCtrlType: '',
+            // 过界信息: before, after
+            overscroll: {
+                x: '',
+                y: '',
+            },
             scroll: {
                 x: 0,
                 y: 0,
@@ -69,7 +76,7 @@ export default defineComponent({
                 x: 0,
                 y: 0,
             },
-        })
+        })        
 
         provide('runtimeData', runtimeData)
 
@@ -155,12 +162,25 @@ export default defineComponent({
             () => [runtimeData.scroll.y, runtimeData.maxScroll.y],
             ([top, max]) => {
                 runtimeData.progress.y = safeDivide(-top, max)
+
+                if (top > 0) {
+                    // 顶部过界
+                    runtimeData.overscroll.y = 'before'
+                } else if (top < -max) {
+                    // 底部过界
+                    runtimeData.overscroll.y = 'after'
+                } else {
+                    runtimeData.overscroll.y = ''
+                }
+
                 if (scrollCtrl.scroll) {
                     scrollCtrl.scroll.updateScrollPos('y')
                 }
                 if (hint) {
                     hint.update('y')
                 }
+
+                
             },
         )
 
