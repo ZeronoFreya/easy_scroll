@@ -5,7 +5,7 @@
                 slot(:name="name", v-bind="slotProps")
         .es_scroll_content.es_smooth_scroll(
             ref="ulRef", :class="[$attrs.class, {es_back_scroll: runtimeData.back}]", 
-            :style="{ transform: `translate(-${displayScrollX}px, -${displayScrollY}px)` }"
+            :style="{ transform: `translate(${displayScrollX}px, ${displayScrollY}px)` }"
         )
             li(v-for="i in 50" :key="i") 列表项 - {{ i }}
     ScrollBar(v-if="scrollBar", :scrollJoy="scrollJoy")

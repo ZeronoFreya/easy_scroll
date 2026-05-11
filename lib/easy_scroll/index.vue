@@ -116,8 +116,8 @@ export default defineComponent({
 
         // const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)
 
-        const displayScrollX = computed(() => runtimeData.scroll.x.toFixed(2))
-        const displayScrollY = computed(() => runtimeData.scroll.y.toFixed(2))
+        const displayScrollX = computed(() => -runtimeData.scroll.x.toFixed(2))
+        const displayScrollY = computed(() => -runtimeData.scroll.y.toFixed(2))
 
         const updateMaxScroll = () => {
             if (ulRef.value && boxRef.value) {
@@ -155,7 +155,7 @@ export default defineComponent({
         watch(
             () => [runtimeData.scroll.x, runtimeData.maxScroll.x],
             ([left, max]) => {
-                runtimeData.progress.x = safeDivide(-left, max)
+                runtimeData.progress.x = safeDivide(left, max)
                 if (scrollCtrl.scroll) {
                     scrollCtrl.scroll.updateScrollPos('x')
                 }
@@ -167,12 +167,12 @@ export default defineComponent({
         watch(
             () => [runtimeData.scroll.y, runtimeData.maxScroll.y],
             ([top, max]) => {
-                runtimeData.progress.y = safeDivide(-top, max)
+                runtimeData.progress.y = safeDivide(top, max)
 
-                if (top > 0) {
+                if (top < 0) {
                     // 顶部过界
                     runtimeData.overscroll.y = 'before'
-                } else if (top < -max) {
+                } else if (top > max) {
                     // 底部过界
                     runtimeData.overscroll.y = 'after'
                 } else {
