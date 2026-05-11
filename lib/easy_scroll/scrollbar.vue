@@ -1,89 +1,72 @@
 <script>
-import { defineComponent, ref, onBeforeUnmount } from 'vue'
+import { defineComponent, ref, reactive, inject, computed, onBeforeUnmount } from 'vue'
 
 export default defineComponent({
     components: {},
     props: {
-        data:{
-            type: Object,
-            required: true
-        },
+        // data:{
+        //     type: Object,
+        //     required: true
+        // },
         scroll: {
             type: String,
             default: 'y',
             validator: (value) => ['x', 'y'].includes(value),
-        },        
+        },
+        scrollJoy: Boolean,
         teleport: {
             type: String,
             default: 'body',
         },
     },
     setup(props) {
-        let math_temp = 0
-        let thumb_mouse_offset = 0
+        const runtimeData = inject('runtimeData')
+        const scrollCtrl = inject('scrollCtrl')
+        const ctrlScroll = scrollCtrl.scroll
 
-        const thumbRef = ref(null)
-
-        const track_up = (e) => {
-            // const scroll = e.currentTarget.dataset.scroll
-            const track = e.currentTarget
-            track.classList.remove('es_track_down')
-            math_temp = 0
-            thumb_mouse_offset = 0
-            track.removeEventListener('pointermove', track_move)
-            track.removeEventListener('pointerup', track_up)
-
-            // resetTime(scroll)
-        }
-
-        const track_move = (e) => {
-            const offset = (props.scroll == 'x' ? e.offsetX : e.offsetY) - thumb_mouse_offset
-            // scroll_to(scroll, Math.round(offset * math_temp))
-        }
-
-        const track_down = (e) => {
-            const track = e.currentTarget
-            track.classList.add('es_track_down')
-            // const scroll = props.scroll
-            const offsetSize = props.scroll == 'x' ? 'offsetWidth' : 'offsetHeight'
-            // const scrollPos = scroll == 'x' ? 'scrollLeft' : 'scrollTop'
-            let offset = props.scroll == 'x' ? e.offsetX : e.offsetY
-            // math_temp = refEl.scroll_content[offsetSize] / track[offsetSize]
-
-            if (e.target === thumbRef.value) {
-                // 拖拽 thumb: 使用点击的位置
-                thumb_mouse_offset = offset
-            } else {
-                // 在 track 拖拽: 使用 thumb 的中心
-                thumb_mouse_offset = thumbRef.value[offsetSize] / 2
-                offset -= thumb_mouse_offset
-                // refEl.scroll_box[scrollPos] = Math.round(offset * math_temp)
-            }
-
-            track.addEventListener('pointerup', track_up)
-            track.addEventListener('pointermove', track_move)
-            track.setPointerCapture(e.pointerId)
-        }
-        // onBeforeUnmount(track_up)
-        return { track_down, thumbRef }
+        const thumbClass = computed(()=>({
+            y: {
+                joytick: props.scrollJoy,
+                dragging: runtimeData.draging,
+                es_back_scroll: runtimeData.back,
+            },
+        }))
+        const thumbStyle = computed(()=>({
+            y: {
+                height: `${ctrlScroll.thumbRect.y.height}px`,
+                transform: `translate(-50%, ${ctrlScroll.thumbRect.y.pos}px)`,
+            },
+        }))
+        return { runtimeData, ctrlScroll, thumbClass, thumbStyle }
     },
 })
 </script>
 
 <template lang="pug">
 Teleport(:to="teleport", defer, :disabled="teleport === 'body'")
-    slot(:title="'title'")
-        .es_scroll_bar(:class="['es_scroll_'+scroll]")
-            .es_track(@pointerdown.stop="track_down")
+    .es_scroll_bar.es_scroll_y(:ref="el=>ctrlScroll.scrollRef.y.box=el")
+        slot(name="scroll_y", 
+            :scrollRatio="ctrlScroll.scrollRatio",
+            :sizeRatio="ctrlScroll.sizeRatio",
+            :thumb="ctrlScroll.thumbRect.y",
+            :onDrag="(e)=>ctrlScroll.track_down(e, 'y')"
+        )        
+            .es_track(track, @pointerdown="ctrlScroll.track_down($event, 'y')")
                 .es_track_view
-                .es_thumb(ref="thumbRef")
+                .es_thumb.es_smooth_scroll(thumb, 
+                    :class="thumbClass.y",
+                    :style="thumbStyle.y"
+                )
                     .es_thumb_view    
 </template>
 
 <style lang="scss">
 .es_scroll_bar {
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-thumb-hover: #94a3b8;
+    --scrollbar-thumb-active: #3b82f6;
     position: absolute;
-    background: goldenrod;
+    background: transparent;
     z-index: 2;
     .es_track {
         position: relative;
@@ -93,34 +76,66 @@ Teleport(:to="teleport", defer, :disabled="teleport === 'body'")
     .es_track_view {
         width: 100%;
         height: 100%;
-        background: red;
+        border-radius: 7px;
+        background-color: transparent;
+        transition: background-color 0.2s;
     }
     .es_thumb {
+        will-change: transform;
         position: absolute;
-
-        width: 100%;
-        height: 100%;
+        // transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        &.dragging {
+            // transition: none;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            .es_thumb_view {
+                background-color: var(--scrollbar-thumb-active);
+            }
+        }
     }
     .es_thumb_view {
-        background: greenyellow;
+        pointer-events: none;
+        // background: greenyellow;
+        background-color: var(--scrollbar-thumb);
+        border-radius: 4px;
+        transition: background-color 0.2s;
     }
+
+    &:hover {
+        .es_track_view {
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+        .es_thumb_view {
+            background-color: var(--scrollbar-thumb-hover);
+        }
+    }
+
     &.es_scroll_y {
         top: 0;
         right: 0;
-        width: 30px;
+        width: 20px;
         height: 100%;
+        padding: 5px 0;
         .es_track {
             padding: 0 5px;
         }
         .es_thumb {
+            width: 100%;
+            height: 0px;
             top: 0;
             left: 50%;
             transform: translate(-50%, 0);
             padding: 0 5px;
+
+            &.joytick {
+                height: 100px;
+                top: 50%;
+                // margin-top: -50px;
+                // margin-left: calc(100% * -0.5);
+            }
         }
         .es_thumb_view {
             width: 100%;
-            height: 100px;
+            height: 100%;
         }
     }
 }

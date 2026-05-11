@@ -5,25 +5,11 @@
                 slot(:name="name", v-bind="slotProps")
         .es_scroll_content.es_smooth_scroll(
             ref="ulRef", :class="[$attrs.class, {es_back_scroll: runtimeData.back}]", 
-            :style="{ transform: `translateY(${displayScrollY}px)` }"
+            :style="{ transform: `translate(-${displayScrollX}px, -${displayScrollY}px)` }"
         )
             li(v-for="i in 50" :key="i") 列表项 - {{ i }}
-        
-    .es_scroll_bar.es_scroll_y(:ref="el=>scrollCtrl.scroll.scrollRef.y.box=el")
-        slot(name="scroll_y", 
-            :scrollRatio="scrollCtrl.scroll.scrollRatio",
-            :sizeRatio="scrollCtrl.scroll.sizeRatio",
-            :thumb="scrollCtrl.scroll.thumbRect.y",
-            :onDrag="(e)=>scrollCtrl.scroll.track_down(e, 'y')"
-        )        
-            .es_track(track, @pointerdown="scrollCtrl.scroll.track_down($event, 'y')")
-                .es_track_view
-                .es_thumb.es_smooth_scroll(thumb, 
-                    :class="{joytick: scrollJoy, dragging: runtimeData.draging, es_back_scroll: runtimeData.back}",
-                    :style="{height: `${scrollCtrl.scroll.thumbRect.y.height}px`, transform: `translate(-50%, ${scrollCtrl.scroll.thumbRect.y.pos}px)`}"
-                )
-                    .es_thumb_view  
-    Cursor(v-if="scrollCtrl.midnav && scrollCtrl.midnav.active", 
+    ScrollBar(v-if="scrollBar", :scrollJoy="scrollJoy")
+    Cursor(v-if="midMouseNav && scrollCtrl.midnav?.active", 
         :start="scrollCtrl.midnav.startPos", 
         :pos="scrollCtrl.midnav.cursorPos"
     )

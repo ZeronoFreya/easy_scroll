@@ -15,18 +15,18 @@ import { clamp, safeDivide } from './utils.js'
 
 import Cursor from './cursor.vue'
 import Hint from './hint.vue'
-// import ScrollBar from './scrollbar.vue'
+import ScrollBar from './scrollbar.vue'
 
 import useWheel from './use_wheel.js'
 import useScrollbar from './use_scrollbar.js'
 import useMidNav from './use_midnav.js'
 import useHint from './use_hint.js'
 
-import useLoop from './use_loop.js'
+// import useLoop from './use_loop.js'
 import useAutoResetBool from './use_auto_reset_bool.js'
 
 export default defineComponent({
-    components: { Cursor, Hint },
+    components: { Cursor, Hint, ScrollBar },
     inheritAttrs: false,
     props: sProps,
     setup(props) {
@@ -46,6 +46,10 @@ export default defineComponent({
             overscroll: {
                 x: '',
                 y: '',
+            },
+            maxOverscroll: {
+                x: 0,
+                y: 0,
             },
             scroll: {
                 x: 0,
@@ -88,29 +92,31 @@ export default defineComponent({
             )
         }
 
-        const startLoop = () => {
-            if (!runtimeData.rafId) {
-                runtimeData.rafId = requestAnimationFrame(physicsLoop)
-            }
-        }
-        const stopLoop = () => {
-            if (runtimeData.rafId) {
-                cancelAnimationFrame(runtimeData.rafId)
-                runtimeData.rafId = null
-            }
-        }
+        // const startLoop = () => {
+        //     if (!runtimeData.rafId) {
+        //         runtimeData.rafId = requestAnimationFrame(physicsLoop)
+        //     }
+        // }
+        // const stopLoop = () => {
+        //     if (runtimeData.rafId) {
+        //         cancelAnimationFrame(runtimeData.rafId)
+        //         runtimeData.rafId = null
+        //     }
+        // }
 
-        const hint = props.showHint ? reactive(useHint(runtimeData, startLoop)) : null
+        const hint = props.showHint ? reactive(useHint(runtimeData)) : null
         provide('hint', hint)
 
         const scrollCtrl = reactive({
-            wheel: useWheel(runtimeData, startLoop, hint),
-            scroll: props.scrollBar ? useScrollbar(runtimeData, startLoop, signal, props.scrollJoy, hint): null,
-            midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, startLoop, hint) : null,
+            wheel: useWheel(runtimeData, hint),
+            scroll: props.scrollBar ? useScrollbar(runtimeData, signal, props.scrollJoy, hint): null,
+            midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, hint) : null,
         })
+        provide('scrollCtrl', scrollCtrl)
 
-        const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)
+        // const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)
 
+        const displayScrollX = computed(() => runtimeData.scroll.x.toFixed(2))
         const displayScrollY = computed(() => runtimeData.scroll.y.toFixed(2))
 
         const updateMaxScroll = () => {
@@ -210,7 +216,7 @@ export default defineComponent({
         })
 
         onBeforeUnmount(() => {
-            stopLoop()
+            // stopLoop()
             // if (freezeTimer) clearTimeout(freezeTimer)
             // window.removeEventListener('mousemove', onDrag)
             // window.removeEventListener('mouseup', endDrag)
@@ -232,6 +238,7 @@ export default defineComponent({
             hint,
             boxRef,
             ulRef,
+            displayScrollX,
             displayScrollY,
             filterSlots,
         }
