@@ -34,6 +34,7 @@
     height: fit-content;
 
     .es_scroll_box {
+        anchor-name: --hint-anchor;
         position: relative;
         z-index: 1;
         margin: 0;
@@ -56,13 +57,15 @@
         background-color: var(--box-bg);
         position: relative;
         z-index: 1;
-        background: #f0f0f0;
+        // background: #f0f0f0;
 
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 20px;
         width: fit-content;
+
+        
 
         // &.smooth {
         //     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);

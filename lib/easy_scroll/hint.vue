@@ -4,23 +4,38 @@ import { defineComponent, ref, inject, computed } from 'vue'
 export default defineComponent({
     setup() {
         const hint = inject('hint')
-        const runtimeData = inject('runtimeData')   
+        const runtimeData = inject('runtimeData')
 
-        const mouseenter = ()=>{
+        const displayHintX = computed(() => runtimeData.scroll.x.toFixed(2))
+        const displayHintY = computed(() => runtimeData.scroll.y.toFixed(2))
+
+        const styleY = computed(() => ({
+            width: runtimeData.viewportSize.w + 'px',
+            height: hint.size.y.max + 'px',
+            transform: `translateX(${displayHintX.value}px)`,
+        }))
+
+        const mouseenter = () => {
             hint.countdown.y.run = false
+            hint.mouseInHint = true
         }
 
-        return { hint, runtimeData, mouseenter }
+        const mouseleave = () => {
+            hint.mouseInHint = false
+            hint.countdownEnd()
+        }
+
+        return { hint, runtimeData, displayHintX, styleY, mouseenter, mouseleave }
     },
 })
 </script>
 
 <template lang="pug">
 .es_scroll_hint.es_hint_top(
-    :class="{ active: hint.pullRatio.y.before > 1.0 }", 
-    :style="{ height: hint.size.y.before + 'px' }",
+    :class="{ active: hint.pullRatio.y.before > 1.0, es_back_hint: runtimeData.back }", 
+    :style="[styleY, {top: `-${hint.size.y.max}px`}]",
     @mouseenter="mouseenter",
-    @mouseleave="hint.countdownEnd",
+    @mouseleave="mouseleave",
 )
     .es_countdown_bar(:class="{show: hint.size.y.before > 0}")
         .es_progress_fill(
@@ -36,10 +51,10 @@ export default defineComponent({
             .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.before > 1.0 ? '释放刷新' : '下拉刷新' }}
             .text(v-else) {{ hint.pullRatio.y.before > 1.0 ? 'A' : 'B' }}    
 .es_scroll_hint.es_hint_bottom(
-    :class="{ active: hint.pullRatio.y.after > 1.0 }", 
-    :style="{height: hint.size.y.after + 'px'}",
+    :class="{ active: hint.pullRatio.y.after > 1.0, es_back_hint: runtimeData.back }", 
+    :style="[styleY, {bottom: `-${hint.size.y.max}px`}]",
     @mouseenter="mouseenter",
-    @mouseleave="hint.countdownEnd",
+    @mouseleave="mouseleave",
 )
     .es_countdown_bar(:class="{show: hint.size.y.after > 0}")
         .es_progress_fill(
@@ -57,6 +72,7 @@ export default defineComponent({
 </template>
 
 <style lang="scss">
+
 @keyframes shrink {
     from {
         width: 100%;
@@ -65,21 +81,26 @@ export default defineComponent({
         width: 0%;
     }
 }
+
 .es_scroll_hint {
     position: absolute;
     left: 0;
-    width: 100%;
+    width: 0;
+    height: 0;
     z-index: 0;
-
+    opacity: 1;
     will-change: height;
-    transition: height 1s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: height 1.6s cubic-bezier(0.23, 1, 0.32, 1);
+    &.es_back_hint {
+        transition: height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
 
     .es_countdown_bar {
         position: absolute;
         pointer-events: none;
         opacity: 0;
         transition: opacity 0.6s;
-        &.show{
+        &.show {
             opacity: 1;
             .es_progress_run {
                 animation-play-state: running;
@@ -124,7 +145,7 @@ export default defineComponent({
     }
 
     &.es_hint_top {
-        top: 0;
+        // width: 100%;
         background: linear-gradient(to bottom, #eff6ff, #fff);
         border-bottom: 1px solid rgba(59, 130, 246, 0.1);
 
@@ -149,7 +170,6 @@ export default defineComponent({
     }
 
     &.es_hint_bottom {
-        bottom: 0;
         background: linear-gradient(to top, #eff6ff, #fff);
         border-top: 1px solid rgba(59, 130, 246, 0.1);
         &.active .icon {
