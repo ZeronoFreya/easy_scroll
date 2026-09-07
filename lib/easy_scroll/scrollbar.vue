@@ -27,32 +27,35 @@ export default defineComponent({
         }
 
         const thumbClass = computed(() => ({
-            joytick: props.scrollJoy && isY,
+            joytick: props.scrollJoy,
             dragging: runtimeData.draging,
             es_back_scroll: runtimeData.back,
         }))
 
         // thumb 的视觉位置：夹紧在轨道两端内，过界(overscroll)不体现在 UI 上。
         // 仅 UI 层约束；thumbRect[axis].pos(逻辑值) 保持原样。
-        // 摇杆(y)除外：pos 表示以轨道中心为原点的摇杆偏移量，允许正负。
+        // 摇杆模式除外：pos 表示以轨道中心为原点的摇杆偏移量，允许正负。
         const displayPos = computed(() => {
             const pos = ctrlScroll.thumbRect[props.scroll].pos
-            if (props.scrollJoy && isY) return pos
+            if (props.scrollJoy) return pos
             return clamp(pos, 0, ctrlScroll.maxScrBarPos[props.scroll])
         })
 
         const thumbStyle = computed(() => {
             const t = ctrlScroll.thumbRect[props.scroll]
             const pos = displayPos.value
-            return isY
-                ? {
-                      height: `${t.height}px`,
-                      transform: `translate(-50%, ${pos}px)`,
-                  }
-                : {
-                      width: `${t.width}px`,
-                      transform: `translate(${pos}px, -50%)`,
-                  }
+            if (isY) {
+                return {
+                    height: `${t.height}px`,
+                    transform: `translate(-50%, ${pos}px)`,
+                }
+            }
+            // x 轨摇杆使用固定宽度杆, 保证可拖动范围
+            const width = props.scrollJoy ? 100 : t.width
+            return {
+                width: `${width}px`,
+                transform: `translate(${pos}px, -50%)`,
+            }
         })
         return { runtimeData, ctrlScroll, isY, setBox, thumbClass, thumbStyle }
     },
@@ -171,6 +174,11 @@ Teleport(:to="teleport", defer, :disabled="teleport === 'body'")
             left: 0;
             transform: translate(0, -50%);
             padding: 5px 0;
+
+            &.joytick {
+                width: 100px;
+                left: 50%;
+            }
         }
         .es_thumb_view {
             width: 100%;
