@@ -99,13 +99,14 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
 <style lang="scss">
 .es_scroll_bar {
     // 滚动条独立携带主题 token(teleport 出容器后不依赖外部继承)
-    --es-thumb: #cbd5e1;
-    --es-thumb-hover: #94a3b8;
-    --es-thumb-active: #3b82f6;
+    // 亮色: 深 thumb; 深色: 浅 thumb(与背景反色, 对比醒目)
+    --es-thumb: #6b7280;
+    --es-thumb-hover: #4b5563;
+    --es-thumb-active: #2563eb;
     --es-track-hover: rgba(0, 0, 0, 0.04);
     &[data-es-theme='dark'] {
-        --es-thumb: #3f4655;
-        --es-thumb-hover: #565f72;
+        --es-thumb: #9ca3af;
+        --es-thumb-hover: #d1d5db;
         --es-thumb-active: #60a5fa;
         --es-track-hover: rgba(255, 255, 255, 0.06);
     }
