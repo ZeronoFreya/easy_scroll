@@ -23,8 +23,6 @@ import useWheel from './use_wheel.js'
 import useScrollbar from './use_scrollbar.js'
 import useMidNav from './use_midnav.js'
 import useHint from './use_hint.js'
-
-// import useLoop from './use_loop.js'
 import useAutoResetBool from './use_auto_reset_bool.js'
 
 export default defineComponent({
@@ -39,10 +37,10 @@ export default defineComponent({
         const { signal } = controller
 
         const runtimeData = reactive({
+            // 输入扩展自管的 rAF 句柄(摇杆/中键拖动期间)
             rafId: null,
             draging: false,
             back: useAutoResetBool(300),
-            // inputSource: 'inertia',
             currCtrlType: '',
             // 过界信息: before, after
             overscroll: {
@@ -66,9 +64,6 @@ export default defineComponent({
                 x: 0,
                 y: 0,
             },
-            velocity: 0,
-            // isWheelFreezing: false,
-            // isOverscrolling: false,
             viewportSize: {
                 w: 0,
                 h: 0,
@@ -98,18 +93,6 @@ export default defineComponent({
                 Object.entries(slots).filter(([name]) => name.startsWith(prefix)),
             )
         }
-
-        // const startLoop = () => {
-        //     if (!runtimeData.rafId) {
-        //         runtimeData.rafId = requestAnimationFrame(physicsLoop)
-        //     }
-        // }
-        // const stopLoop = () => {
-        //     if (runtimeData.rafId) {
-        //         cancelAnimationFrame(runtimeData.rafId)
-        //         runtimeData.rafId = null
-        //     }
-        // }
 
         const hint = props.showHint ? reactive(useHint(runtimeData)) : null
         provide('hint', hint)
@@ -170,8 +153,6 @@ export default defineComponent({
                 }
             }, delay)
         }
-
-        // const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)
 
         const displayScrollX = computed(() => -runtimeData.scroll.x.toFixed(2))
         const displayScrollY = computed(() => -runtimeData.scroll.y.toFixed(2))
@@ -274,16 +255,7 @@ export default defineComponent({
         })
 
         onBeforeUnmount(() => {
-            // stopLoop()
-            // if (freezeTimer) clearTimeout(freezeTimer)
             clearTimeout(wheelSettleTimer)
-            // window.removeEventListener('mousemove', onDrag)
-            // window.removeEventListener('mouseup', endDrag)
-            // window.removeEventListener('touchmove', onDrag)
-            // window.removeEventListener('touchend', endDrag)
-            // window.removeEventListener('mousedown', toggleMiddleMouse)
-            // window.removeEventListener('mousemove', handleMouseMove)
-            // window.removeEventListener('mousedown', handleMiddleMouseStop)
 
             observer.unobserve(ulRef.value)
             observer.unobserve(boxRef.value)

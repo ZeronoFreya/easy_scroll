@@ -16,33 +16,20 @@ export default {
     setup(props) {
 
         function calculateAngle(p1, p2) {
-            // 计算向量AB的分量
-            const dx = p2.x - p1.x;
-            const dy = p2.y - p1.y;
-            // 处理A和B重合的特殊情况
+            // 计算向量 AB 的方向角（以屏幕向上为 0°，顺时针为正）
+            const dx = p2.x - p1.x
+            const dy = p2.y - p1.y
             if (dx === 0 && dy === 0) {
-                return 0; // 或抛出错误，因为角度无定义
+                return 0 // A/B 重合时角度无定义
             }
-            // 计算点积和叉积
-            // const dot = -dy;        // AB · AY (AY = [0, -1])
-            // const cross = -dx;      // AB × AY (叉积的Z分量)
-            // 计算带方向的夹角（弧度）
-            let angleRad = Math.atan2(-dx, -dy);
-            // 转换为顺时针角度（0-360度）
-            let angleDeg = -angleRad * 180 / Math.PI;
+            let angleRad = Math.atan2(-dx, -dy)
+            // 转换为顺时针角度（0-360 度）
+            let angleDeg = (-angleRad * 180) / Math.PI
             if (angleDeg < 0) {
-                angleDeg += 360;
+                angleDeg += 360
             }
-            return angleDeg;
+            return angleDeg
         }
-
-        // 为了性能，直接比较平方和
-        // const Radius = 40 * 40
-        // function squaredDistance(p1, p2) {
-        //     const dx = p1.x - p2.x;
-        //     const dy = p1.y - p2.y;
-        //     return dx * dx + dy * dy;
-        // }
 
 
 
@@ -53,12 +40,7 @@ export default {
         })
 
         const rotate = computed(() => {
-            // const d = squaredDistance(props.start, props.pos)
-            const r = calculateAngle(props.start, props.pos)
-            // if (d < Radius) {                
-            //     return r * d / Radius
-            // }
-            return r
+            return calculateAngle(props.start, props.pos)
         })
 
         return {

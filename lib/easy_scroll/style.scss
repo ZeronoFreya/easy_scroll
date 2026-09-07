@@ -26,7 +26,6 @@
         }
     }
     .es_scroll_content {
-        // list-style: none;
         padding: 0;
         margin: 0;
         will-change: transform;
@@ -34,10 +33,6 @@
         position: relative;
         z-index: 1;
 
-        // display: flex;
-        // flex-direction: column;
-        // align-items: center;
-        // gap: 20px;
         width: fit-content;
         min-width: 100%;
     }

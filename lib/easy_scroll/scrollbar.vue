@@ -118,9 +118,7 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
     .es_thumb {
         will-change: transform;
         position: absolute;
-        // transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         &.dragging {
-            // transition: none;
             transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             .es_thumb_view {
                 background-color: var(--scrollbar-thumb-active);
@@ -129,7 +127,6 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
     }
     .es_thumb_view {
         pointer-events: none;
-        // background: greenyellow;
         background-color: var(--scrollbar-thumb);
         border-radius: 4px;
         transition: background-color 0.2s;
