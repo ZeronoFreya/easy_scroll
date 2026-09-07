@@ -6,6 +6,40 @@
 }
 
 .es_scroll_containter {
+    // === 颜色 token(默认亮色) ===
+    --es-bg: #ffffff;
+    --es-surface: #f7f8fa;
+    --es-text: #333333;
+    --es-text-secondary: #666666;
+    --es-accent: #3b82f6;
+
+    --es-hint-start: #eff6ff;
+    --es-hint-end: #ffffff;
+    --es-hint-border: rgba(59, 130, 246, 0.15);
+
+    --es-thumb: #cbd5e1;
+    --es-thumb-hover: #94a3b8;
+    --es-thumb-active: #3b82f6;
+    --es-track-hover: rgba(0, 0, 0, 0.04);
+
+    // === 深色主题覆盖 ===
+    &[data-es-theme='dark'] {
+        --es-bg: #1f2430;
+        --es-surface: #161a22;
+        --es-text: #e5e7eb;
+        --es-text-secondary: #9ca3af;
+        --es-accent: #60a5fa;
+
+        --es-hint-start: #1e2a3f;
+        --es-hint-end: #161a22;
+        --es-hint-border: rgba(96, 165, 250, 0.25);
+
+        --es-thumb: #3f4655;
+        --es-thumb-hover: #565f72;
+        --es-thumb-active: #60a5fa;
+        --es-track-hover: rgba(255, 255, 255, 0.06);
+    }
+
     position: relative;
     width: fit-content;
     height: fit-content;
@@ -16,7 +50,7 @@
         margin: 0;
         padding: 0;
         font-family: sans-serif;
-        background-color: var(--bg-color);
+        background-color: var(--es-bg);
         width: 30vw;
         height: 60vh;
         overflow: hidden;
@@ -29,7 +63,7 @@
         padding: 0;
         margin: 0;
         will-change: transform;
-        background-color: var(--box-bg);
+        background-color: var(--es-surface);
         position: relative;
         z-index: 1;
 

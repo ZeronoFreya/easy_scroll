@@ -82,5 +82,9 @@ export default {
     pointer-events: none;
     will-change: transform;
     opacity: 0.8;
+    color: var(--es-text);
+}
+.es_mid_nav_cursor svg {
+    fill: currentColor;
 }
 </style>

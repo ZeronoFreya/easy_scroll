@@ -86,6 +86,22 @@ export default defineComponent({
 
         provide('runtimeData', runtimeData)
 
+        // 主题解析: 'light'/'dark' 直接生效; 'auto' 跟随系统 prefers-color-scheme
+        const mediaDark =
+            typeof window !== 'undefined'
+                ? (window.matchMedia?.('(prefers-color-scheme: dark)') ?? null)
+                : null
+        const systemDark = ref(mediaDark ? mediaDark.matches : false)
+        const resolvedTheme = computed(() => {
+            if (props.theme !== 'auto') return props.theme
+            return systemDark.value ? 'dark' : 'light'
+        })
+        const onSystemThemeChange = (e) => {
+            systemDark.value = e.matches
+        }
+        if (mediaDark) mediaDark.addEventListener('change', onSystemThemeChange)
+        provide('theme', resolvedTheme)
+
         const slots = useSlots()
         // 工具函数：过滤插槽
         const filterSlots = (prefix) => {
@@ -256,6 +272,7 @@ export default defineComponent({
 
         onBeforeUnmount(() => {
             clearTimeout(wheelSettleTimer)
+            if (mediaDark) mediaDark.removeEventListener('change', onSystemThemeChange)
 
             observer.unobserve(ulRef.value)
             observer.unobserve(boxRef.value)
@@ -267,6 +284,7 @@ export default defineComponent({
             runtimeData,
             scrollCtrl,
             hint,
+            resolvedTheme,
             boxRef,
             ulRef,
             displayScrollX,

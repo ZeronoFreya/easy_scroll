@@ -178,7 +178,7 @@ export default defineComponent({
         align-items: center;
         justify-content: center;
 
-        color: #666;
+        color: var(--es-text-secondary);
         font-size: 13px;
         pointer-events: none;
         opacity: 0.9;
@@ -192,15 +192,14 @@ export default defineComponent({
     }
 
     &.active {
-        color: #3b82f6;
+        color: var(--es-accent);
         opacity: 1;
         font-weight: bold;
     }
 
     &.es_hint_top {
-        // width: 100%;
-        background: linear-gradient(to bottom, #eff6ff, #fff);
-        border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        background: linear-gradient(to bottom, var(--es-hint-start), var(--es-hint-end));
+        border-bottom: 1px solid var(--es-hint-border);
 
         &.active .icon {
             transform: rotate(180deg) scale(1.2);
@@ -217,14 +216,14 @@ export default defineComponent({
             width: 100%;
             height: 3px;
             border-radius: 3px;
-            background: #3b82f6;
+            background: var(--es-accent);
             opacity: 0.6;
         }
     }
 
     &.es_hint_bottom {
-        background: linear-gradient(to top, #eff6ff, #fff);
-        border-top: 1px solid rgba(59, 130, 246, 0.1);
+        background: linear-gradient(to top, var(--es-hint-start), var(--es-hint-end));
+        border-top: 1px solid var(--es-hint-border);
         &.active .icon {
             transform: rotate(-180deg) scale(1.2);
         }
@@ -240,15 +239,15 @@ export default defineComponent({
             width: 100%;
             height: 3px;
             border-radius: 3px;
-            background: #3b82f6;
+            background: var(--es-accent);
             opacity: 0.6;
         }
     }
 
     // 横向条带(左/右): 宽 = size.x.max, 高 = 视口高, 垂直随内容补偿
     &.es_hint_left {
-        background: linear-gradient(to right, #eff6ff, #fff);
-        border-right: 1px solid rgba(59, 130, 246, 0.1);
+        background: linear-gradient(to right, var(--es-hint-start), var(--es-hint-end));
+        border-right: 1px solid var(--es-hint-border);
 
         &.active .icon {
             transform: scale(1.3);
@@ -258,8 +257,8 @@ export default defineComponent({
     // right 定位需解除基类 left:0（否则 width 固定时 left 优先、right 被忽略）
     &.es_hint_right {
         left: auto;
-        background: linear-gradient(to left, #eff6ff, #fff);
-        border-left: 1px solid rgba(59, 130, 246, 0.1);
+        background: linear-gradient(to left, var(--es-hint-start), var(--es-hint-end));
+        border-left: 1px solid var(--es-hint-border);
 
         &.active .icon {
             transform: scale(1.3);
@@ -280,7 +279,7 @@ export default defineComponent({
         width: 3px;
         height: 100%;
         border-radius: 3px;
-        background: #3b82f6;
+        background: var(--es-accent);
         opacity: 0.6;
     }
     // 纵向进度由下(外)向上(内)收缩: 用 height 动画

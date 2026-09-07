@@ -21,6 +21,7 @@ export default defineComponent({
         const runtimeData = inject('runtimeData')
         const scrollCtrl = inject('scrollCtrl')
         const ctrlScroll = scrollCtrl.scroll
+        const theme = inject('theme', 'light')
 
         const isY = props.scroll === 'y'
         // 挂载/卸载时同步自身 DOM 引用(track/thumb), 支持 v-if 动态显隐
@@ -73,14 +74,14 @@ export default defineComponent({
                 transform: `translate(${pos}px, -50%)`,
             }
         })
-        return { runtimeData, ctrlScroll, isY, setBox, thumbClass, thumbStyle }
+        return { runtimeData, ctrlScroll, isY, setBox, thumbClass, thumbStyle, theme }
     },
 })
 </script>
 
 <template lang="pug">
 Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
-    .es_scroll_bar(:class="isY ? 'es_scroll_y' : 'es_scroll_x'", :ref="setBox")
+    .es_scroll_bar(:class="isY ? 'es_scroll_y' : 'es_scroll_x'", :ref="setBox", :data-es-theme="theme")
         slot(:name="`scroll_${$props.scroll}`", 
             :sizeRatio="ctrlScroll.sizeRatio",
             :thumb="ctrlScroll.thumbRect[$props.scroll]",
@@ -97,9 +98,17 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
 
 <style lang="scss">
 .es_scroll_bar {
-    --scrollbar-thumb: #cbd5e1;
-    --scrollbar-thumb-hover: #94a3b8;
-    --scrollbar-thumb-active: #3b82f6;
+    // 滚动条独立携带主题 token(teleport 出容器后不依赖外部继承)
+    --es-thumb: #cbd5e1;
+    --es-thumb-hover: #94a3b8;
+    --es-thumb-active: #3b82f6;
+    --es-track-hover: rgba(0, 0, 0, 0.04);
+    &[data-es-theme='dark'] {
+        --es-thumb: #3f4655;
+        --es-thumb-hover: #565f72;
+        --es-thumb-active: #60a5fa;
+        --es-track-hover: rgba(255, 255, 255, 0.06);
+    }
     position: absolute;
     background: transparent;
     z-index: 2;
@@ -121,23 +130,23 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
         &.dragging {
             transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
             .es_thumb_view {
-                background-color: var(--scrollbar-thumb-active);
+                background-color: var(--es-thumb-active);
             }
         }
     }
     .es_thumb_view {
         pointer-events: none;
-        background-color: var(--scrollbar-thumb);
+        background-color: var(--es-thumb);
         border-radius: 4px;
         transition: background-color 0.2s;
     }
 
     &:hover {
         .es_track_view {
-            background-color: rgba(0, 0, 0, 0.03);
+            background-color: var(--es-track-hover);
         }
         .es_thumb_view {
-            background-color: var(--scrollbar-thumb-hover);
+            background-color: var(--es-thumb-hover);
         }
     }
 

@@ -41,6 +41,12 @@ declare const EasyScroll: DefineComponent<
          * @default ''
          */
         teleport?: string
+
+        /**
+         * 颜色主题: 'light' / 'dark' / 'auto'(跟随系统 prefers-color-scheme)
+         * @default 'auto'
+         */
+        theme?: 'light' | 'dark' | 'auto'
     },
     {},
     {},
