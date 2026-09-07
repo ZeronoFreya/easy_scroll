@@ -45,7 +45,8 @@ export default defineComponent({
 
         const thumbClass = computed(() => ({
             joytick: props.scrollJoy,
-            dragging: runtimeData.draging,
+            // 仅当前拖动的轴高亮(拖动 y 时 x 不再误高亮)
+            dragging: runtimeData.draging && ctrlScroll.activeAxis === props.scroll,
             es_back_scroll: runtimeData.back,
         }))
 
