@@ -52,6 +52,11 @@ export default defineComponent({
                 x: 0,
                 y: 0,
             },
+            // 过界倒计时(归位仲裁): run=归位被挂起, key=进度条重置信号
+            countdown: {
+                x: { key: 0, run: false },
+                y: { key: 0, run: false },
+            },
             scroll: {
                 x: 0,
                 y: 0,
@@ -111,12 +116,21 @@ export default defineComponent({
         // 过界能力：标记判定与过界上限统一在此生产，与 hint UI 解耦
         const overscroll = useOverscroll(runtimeData)
 
+        // 兄弟扩展互不引用；wheel 滚动后与 hint 的联动由装配层(组合根)桥接
         const scrollCtrl = reactive({
-            wheel: useWheel(runtimeData, hint),
-            scroll: props.scrollBar ? useScrollbar(runtimeData, signal, props.scrollJoy, hint): null,
-            midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, hint) : null,
+            wheel: useWheel(runtimeData),
+            scroll: props.scrollBar ? useScrollbar(runtimeData, signal, props.scrollJoy) : null,
+            midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef) : null,
         })
         provide('scrollCtrl', scrollCtrl)
+
+        // 组合根桥接: 滚轮事件 → 内核滚动; hint 启用时再通知其响应过界区滚轮方向
+        const onWheel = (e) => {
+            scrollCtrl.wheel.onWheel(e)
+            if (hint) {
+                hint.wheel(e.wheelDeltaY)
+            }
+        }
 
         // const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)
 
@@ -199,7 +213,7 @@ export default defineComponent({
         })
 
         onMounted(() => {
-            boxRef.value.addEventListener('wheel', scrollCtrl.wheel.onWheel, {
+            boxRef.value.addEventListener('wheel', onWheel, {
                 signal,
                 passive: true,
             })

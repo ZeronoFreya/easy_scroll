@@ -16,7 +16,7 @@ export default defineComponent({
         }))
 
         const mouseenter = () => {
-            hint.countdown.y.run = false
+            runtimeData.countdown.y.run = false
             hint.mouseInHint = true
         }
 
@@ -40,8 +40,8 @@ export default defineComponent({
     .es_countdown_bar(:class="{show: hint.size.y.before > 0}")
         .es_progress_fill(
             v-if="hint.size.y.before > 0",
-            :key="hint.countdown.y.key",
-            :class="{ es_progress_run: hint.countdown.y.run }",            
+            :key="runtimeData.countdown.y.key",
+            :class="{ es_progress_run: runtimeData.countdown.y.run }",            
             @animationstart="hint.countdownStart",
             @animationend="hint.countdownEnd",
         )
@@ -59,8 +59,8 @@ export default defineComponent({
     .es_countdown_bar(:class="{show: hint.size.y.after > 0}")
         .es_progress_fill(
             v-if="hint.size.y.after > 0",
-            :key="hint.countdown.y.key",
-            :class="{ es_progress_run: hint.countdown.y.run }",            
+            :key="runtimeData.countdown.y.key",
+            :class="{ es_progress_run: runtimeData.countdown.y.run }",            
             @animationstart="hint.countdownStart",
             @animationend="hint.countdownEnd",
         )
