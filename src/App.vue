@@ -27,7 +27,8 @@ div.page(:data-es-theme="theme")
         :showHint="true",
         :theme="theme",
     )
-        li(v-for="i in 50" :key="i") 列表项 - {{ i }}
+        ul
+            li(v-for="i in 50" :key="i") 列表项 - {{ i }}
 </template>
 
 <style lang="scss">
@@ -50,8 +51,16 @@ div.page(:data-es-theme="theme")
 .page[data-es-theme='dark'] .toolbar {
     --es-txt: #e5e7eb;
 }
-li {
+ul{
     width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background-color: gold;
+    padding: 0;
+}
+li {
+    width: 100%;
     height: 50px;
     display: flex;
     align-items: center;

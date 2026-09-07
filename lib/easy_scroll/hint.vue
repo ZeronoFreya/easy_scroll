@@ -206,7 +206,7 @@ export default defineComponent({
         }
 
         .es_countdown_bar {
-            top: 0;
+            bottom: 0;
             left: 0;
             width: 100%;
             height: fit-content;
@@ -229,7 +229,7 @@ export default defineComponent({
         }
 
         .es_countdown_bar {
-            bottom: 0;
+            top: 0;
             left: 0;
             width: 100%;
             height: fit-content;
@@ -266,14 +266,21 @@ export default defineComponent({
     }
 
     // 左右面板的倒计时进度条: 放在面板内侧边缘的竖条, 由下(外)向上(内)缩短
-    &.es_hint_left .es_countdown_bar,
-    &.es_hint_right .es_countdown_bar {
-        top: 50%;
+    &.es_hint_left .es_countdown_bar {
+        top: 0;
+        right: 0;
         width: fit-content;
-        height: 60%;
-        transform: translateY(-50%);
+        height: 100%;
         padding: 5px;
     }
+    &.es_hint_right .es_countdown_bar {
+        top: 0;
+        left: 0;
+        width: fit-content;
+        height: 100%;
+        padding: 5px;
+    }
+
     &.es_hint_left .es_progress_fill,
     &.es_hint_right .es_progress_fill {
         width: 3px;

@@ -105,9 +105,10 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
     --es-thumb-hover: #4b5563;
     --es-thumb-active: #2563eb;
     --es-track-hover: rgba(0, 0, 0, 0.04);
+    --es-width: 20px;
     &[data-es-theme='dark'] {
-        --es-thumb: #9ca3af;
-        --es-thumb-hover: #d1d5db;
+        --es-thumb: rgba(209, 209, 209, 0.6);
+        --es-thumb-hover: rgba(209, 209, 209, 1);
         --es-thumb-active: #60a5fa;
         --es-track-hover: rgba(255, 255, 255, 0.06);
     }
@@ -156,9 +157,9 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
     &.es_scroll_y {
         top: 0;
         right: 0;
-        width: 20px;
+        width: var(--es-width);
         height: 100%;
-        padding: 5px 0;
+        padding: var(--es-width) 0;
         .es_track {
             padding: 0 5px;
         }
@@ -168,7 +169,7 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
             top: 0;
             left: 50%;
             transform: translate(-50%, 0);
-            padding: 0 5px;
+            padding: 0 7px;
 
             &.joytick {
                 height: 100px;
@@ -186,8 +187,8 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
         bottom: 0;
         left: 0;
         width: 100%;
-        height: 20px;
-        padding: 0 5px;
+        height: var(--es-width);
+        padding: 0 var(--es-width);
         .es_track {
             padding: 5px 0;
         }
@@ -197,7 +198,7 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
             top: 50%;
             left: 0;
             transform: translate(0, -50%);
-            padding: 5px 0;
+            padding: 7px 0;
 
             &.joytick {
                 width: 100px;
