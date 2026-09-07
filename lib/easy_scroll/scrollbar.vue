@@ -1,5 +1,6 @@
 <script>
 import { defineComponent, ref, reactive, inject, computed, onBeforeUnmount } from 'vue'
+import { clamp } from './utils.js'
 
 export default defineComponent({
     components: {},
@@ -31,10 +32,18 @@ export default defineComponent({
                 es_back_scroll: runtimeData.back,
             },
         }))
+        // thumb 的视觉位置：夹紧在轨道两端内，过界(overscroll)不体现在 UI 上。
+        // 仅 UI 层约束；thumbRect.y.pos(逻辑值) 保持原样，不影响拖动/回弹/摇杆逻辑。
+        // 摇杆模式例外：pos 表示以轨道中心为原点的摇杆偏移量，本就允许正负。
+        const displayPosY = computed(() => {
+            const pos = ctrlScroll.thumbRect.y.pos
+            if (props.scrollJoy) return pos
+            return clamp(pos, 0, ctrlScroll.maxScrBarPos.y)
+        })
         const thumbStyle = computed(()=>({
             y: {
                 height: `${ctrlScroll.thumbRect.y.height}px`,
-                transform: `translate(-50%, ${ctrlScroll.thumbRect.y.pos}px)`,
+                transform: `translate(-50%, ${displayPosY.value}px)`,
             },
         }))
         return { runtimeData, ctrlScroll, thumbClass, thumbStyle }
