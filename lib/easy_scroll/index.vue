@@ -11,7 +11,8 @@ import {
     onBeforeUnmount,
 } from 'vue'
 import sProps from './props.js'
-import { clamp, safeDivide } from './utils.js'
+import { safeDivide } from './utils.js'
+import useOverscroll from './use_overscroll.js'
 
 import Cursor from './cursor.vue'
 import Hint from './hint.vue'
@@ -107,6 +108,9 @@ export default defineComponent({
         const hint = props.showHint ? reactive(useHint(runtimeData)) : null
         provide('hint', hint)
 
+        // 过界能力：标记判定与过界上限统一在此生产，与 hint UI 解耦
+        const overscroll = useOverscroll(runtimeData)
+
         const scrollCtrl = reactive({
             wheel: useWheel(runtimeData, hint),
             scroll: props.scrollBar ? useScrollbar(runtimeData, signal, props.scrollJoy, hint): null,
@@ -149,6 +153,12 @@ export default defineComponent({
                 if (hint) {
                     hint.resize()
                 }
+
+                // 过界上限由启用方(当前为 hint)提供，交给过界能力统一持有
+                overscroll.applyLimit({
+                    x: hint ? hint.size.x.max : 0,
+                    y: hint ? hint.size.y.max : 0,
+                })
             }
         }
 
@@ -169,15 +179,8 @@ export default defineComponent({
             ([top, max]) => {
                 runtimeData.progress.y = safeDivide(top, max)
 
-                if (top < 0) {
-                    // 顶部过界
-                    runtimeData.overscroll.y = 'before'
-                } else if (top > max) {
-                    // 底部过界
-                    runtimeData.overscroll.y = 'after'
-                } else {
-                    runtimeData.overscroll.y = ''
-                }
+                // 过界标记判定收敛到 overscroll 模块
+                overscroll.update('y')
 
                 if (scrollCtrl.scroll) {
                     scrollCtrl.scroll.updateScrollPos('y')
@@ -185,8 +188,6 @@ export default defineComponent({
                 if (hint) {
                     hint.update('y')
                 }
-
-                
             },
         )
 
