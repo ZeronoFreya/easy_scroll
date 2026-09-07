@@ -11,9 +11,10 @@ export default defineComponent({
             validator: (value) => ['x', 'y'].includes(value),
         },
         scrollJoy: Boolean,
+        // 空 = 不传送(留在组件容器内); 非空选择器 = Teleport 目标
         teleport: {
             type: String,
-            default: 'body',
+            default: '',
         },
     },
     setup(props) {
@@ -78,7 +79,7 @@ export default defineComponent({
 </script>
 
 <template lang="pug">
-Teleport(:to="teleport", defer, :disabled="teleport === 'body'")
+Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
     .es_scroll_bar(:class="isY ? 'es_scroll_y' : 'es_scroll_x'", :ref="setBox")
         slot(:name="`scroll_${$props.scroll}`", 
             :sizeRatio="ctrlScroll.sizeRatio",

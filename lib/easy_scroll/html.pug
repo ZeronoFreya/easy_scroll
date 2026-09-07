@@ -10,8 +10,8 @@
             .es_scroll_slot
                 slot
     // 滚动条仅在对应轴有内容溢出时显示
-    ScrollBar(v-if="scrollBar && scrollAxis != 'x' && runtimeData.maxScroll.y > 0", scroll="y", :scrollJoy="scrollJoy")
-    ScrollBar(v-if="scrollBar && scrollAxis != 'y' && runtimeData.maxScroll.x > 0", scroll="x", :scrollJoy="scrollJoy")
+    ScrollBar(v-if="scrollBar && scrollAxis != 'x' && runtimeData.maxScroll.y > 0", scroll="y", :scrollJoy="scrollJoy", :teleport="teleport")
+    ScrollBar(v-if="scrollBar && scrollAxis != 'y' && runtimeData.maxScroll.x > 0", scroll="x", :scrollJoy="scrollJoy", :teleport="teleport")
     Cursor(v-if="midMouseNav && scrollCtrl.midnav?.active", 
         :start="scrollCtrl.midnav.startPos", 
         :pos="scrollCtrl.midnav.cursorPos"

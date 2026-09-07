@@ -34,6 +34,13 @@ declare const EasyScroll: DefineComponent<
          * @default false
          */
         showHint?: boolean
+
+        /**
+         * 滚动条 teleport 目标(选择器)。空字符串(默认)=不传送,保留在组件容器内;
+         * 传入如 'body' 或 '.float-layer' 则滚动条渲染到该目标
+         * @default ''
+         */
+        teleport?: string
     },
     {},
     {},
