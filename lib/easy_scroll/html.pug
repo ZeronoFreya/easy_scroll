@@ -8,7 +8,8 @@
                 template(v-for="(_, name) in filterSlots('hint')", :key="name", #[name]="slotProps")
                     slot(:name="name", v-bind="slotProps")
             li(v-for="i in 50" :key="i") 列表项 - {{ i }}
-    ScrollBar(v-if="scrollBar", :scrollJoy="scrollJoy")
+    ScrollBar(v-if="scrollBar && scrollAxis != 'x'", scroll="y", :scrollJoy="scrollJoy")
+    ScrollBar(v-if="scrollBar && scrollAxis != 'y'", scroll="x")
     Cursor(v-if="midMouseNav && scrollCtrl.midnav?.active", 
         :start="scrollCtrl.midnav.startPos", 
         :pos="scrollCtrl.midnav.cursorPos"
