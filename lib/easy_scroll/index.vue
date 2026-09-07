@@ -118,9 +118,9 @@ export default defineComponent({
 
         // 兄弟扩展互不引用；wheel 滚动后与 hint 的联动由装配层(组合根)桥接
         const scrollCtrl = reactive({
-            wheel: useWheel(runtimeData),
+            wheel: useWheel(runtimeData, props.scrollAxis),
             scroll: props.scrollBar ? useScrollbar(runtimeData, signal, props.scrollJoy) : null,
-            midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef) : null,
+            midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, props.scrollAxis) : null,
         })
         provide('scrollCtrl', scrollCtrl)
 
@@ -180,6 +180,10 @@ export default defineComponent({
             () => [runtimeData.scroll.x, runtimeData.maxScroll.x],
             ([left, max]) => {
                 runtimeData.progress.x = safeDivide(left, max)
+
+                // x 轴过界标记(与 y 同构)
+                overscroll.update('x')
+
                 if (scrollCtrl.scroll) {
                     scrollCtrl.scroll.updateScrollPos('x')
                 }
