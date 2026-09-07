@@ -9,8 +9,9 @@
                     slot(:name="name", v-bind="slotProps")
             .es_scroll_slot
                 slot
-    ScrollBar(v-if="scrollBar && scrollAxis != 'x'", scroll="y", :scrollJoy="scrollJoy")
-    ScrollBar(v-if="scrollBar && scrollAxis != 'y'", scroll="x", :scrollJoy="scrollJoy")
+    // 滚动条仅在对应轴有内容溢出时显示
+    ScrollBar(v-if="scrollBar && scrollAxis != 'x' && runtimeData.maxScroll.y > 0", scroll="y", :scrollJoy="scrollJoy")
+    ScrollBar(v-if="scrollBar && scrollAxis != 'y' && runtimeData.maxScroll.x > 0", scroll="x", :scrollJoy="scrollJoy")
     Cursor(v-if="midMouseNav && scrollCtrl.midnav?.active", 
         :start="scrollCtrl.midnav.startPos", 
         :pos="scrollCtrl.midnav.cursorPos"

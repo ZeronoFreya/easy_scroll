@@ -1,5 +1,5 @@
 <script>
-import { defineComponent, inject, computed } from 'vue'
+import { defineComponent, inject, computed, onMounted } from 'vue'
 import { clamp } from './utils.js'
 
 export default defineComponent({
@@ -22,9 +22,24 @@ export default defineComponent({
         const ctrlScroll = scrollCtrl.scroll
 
         const isY = props.scroll === 'y'
+        // 挂载/卸载时同步自身 DOM 引用(track/thumb), 支持 v-if 动态显隐
         const setBox = (el) => {
-            ctrlScroll.scrollRef[props.scroll].box = el
+            const ref = ctrlScroll.scrollRef[props.scroll]
+            ref.box = el
+            if (el) {
+                ref.track = el.querySelector('[track]') ?? null
+                ref.thumb = el.querySelector('[thumb]') ?? null
+            } else {
+                ref.track = null
+                ref.thumb = null
+            }
         }
+        // 动态挂载(内容从可滚变为不可滚/反之)后确保尺寸与轨道状态就绪;
+        // Teleport defer 内容在 mounted 之后才插入, 故再补一帧同步
+        onMounted(() => {
+            ctrlScroll.resize()
+            requestAnimationFrame(() => ctrlScroll.resize())
+        })
 
         const thumbClass = computed(() => ({
             joytick: props.scrollJoy,
