@@ -43,6 +43,7 @@ export default defineComponent({
 
 <template lang="pug">
 .es_scroll_hint.es_hint_top(
+    v-if="runtimeData.maxScroll.y > 0",
     :class="{ active: hint.pullRatio.y.before > 1.0, es_back_hint: runtimeData.back }", 
     :style="[styleY, {top: `-${hint.size.y.max}px`}]",
     @mouseenter="mouseenter('y')",
@@ -62,6 +63,7 @@ export default defineComponent({
             .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.before > 1.0 ? '释放刷新' : '下拉刷新' }}
             .text(v-else) 下拉刷新
 .es_scroll_hint.es_hint_bottom(
+    v-if="runtimeData.maxScroll.y > 0",
     :class="{ active: hint.pullRatio.y.after > 1.0, es_back_hint: runtimeData.back }", 
     :style="[styleY, {bottom: `-${hint.size.y.max}px`}]",
     @mouseenter="mouseenter('y')",
@@ -81,7 +83,7 @@ export default defineComponent({
             .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.after > 1.0 ? '释放加载' : '上拉加载' }}
             .text(v-else) 上拉加载
 .es_scroll_hint.es_hint_left(
-    v-if="showXHint",
+    v-if="showXHint && runtimeData.maxScroll.x > 0",
     :class="{ active: hint.pullRatio.x.before > 1.0, es_back_hint: runtimeData.back }", 
     :style="[styleX, {left: `-${hint.size.x.max}px`, top: '0'}]",
     @mouseenter="mouseenter('x')",
@@ -101,7 +103,7 @@ export default defineComponent({
             .text(v-if="runtimeData.draging") {{ hint.pullRatio.x.before > 1.0 ? '到头了' : '向左拖' }}
             .text(v-else) 已到最左
 .es_scroll_hint.es_hint_right(
-    v-if="showXHint",
+    v-if="showXHint && runtimeData.maxScroll.x > 0",
     :class="{ active: hint.pullRatio.x.after > 1.0, es_back_hint: runtimeData.back }", 
     :style="[styleX, {right: `-${hint.size.x.max}px`, left: 'auto', top: '0'}]",
     @mouseenter="mouseenter('x')",
