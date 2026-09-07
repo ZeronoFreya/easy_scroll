@@ -26,14 +26,14 @@ export default defineComponent({
             transform: `translateY(${displayHintY.value}px)`,
         }))
 
-        const mouseenter = () => {
-            runtimeData.countdown.y.run = false
-            hint.mouseInHint = true
+        // 悬停面板: 冻结该轴倒计时并阻止自动回弹, 离开后触发归位
+        const mouseenter = (axis) => {
+            runtimeData.countdown[axis].run = false
+            hint.mouseInHint[axis] = true
         }
-
-        const mouseleave = () => {
-            hint.mouseInHint = false
-            hint.countdownEnd()
+        const mouseleave = (axis) => {
+            hint.mouseInHint[axis] = false
+            hint.countdownEnd(axis)
         }
 
         return { hint, runtimeData, styleY, styleX, showXHint, mouseenter, mouseleave }
@@ -45,46 +45,56 @@ export default defineComponent({
 .es_scroll_hint.es_hint_top(
     :class="{ active: hint.pullRatio.y.before > 1.0, es_back_hint: runtimeData.back }", 
     :style="[styleY, {top: `-${hint.size.y.max}px`}]",
-    @mouseenter="mouseenter",
-    @mouseleave="mouseleave",
+    @mouseenter="mouseenter('y')",
+    @mouseleave="mouseleave('y')",
 )
     .es_countdown_bar(:class="{show: hint.size.y.before > 0}")
         .es_progress_fill(
             v-if="hint.size.y.before > 0",
             :key="runtimeData.countdown.y.key",
             :class="{ es_progress_run: runtimeData.countdown.y.run }",            
-            @animationstart="hint.countdownStart",
-            @animationend="hint.countdownEnd",
+            @animationstart="hint.countdownStart('y')",
+            @animationend="hint.countdownEnd('y')",
         )
     slot(name="hint_top")
         .es_hint_content
             .icon 🔄
             .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.before > 1.0 ? '释放刷新' : '下拉刷新' }}
-            .text(v-else) {{ hint.pullRatio.y.before > 1.0 ? 'A' : 'B' }}    
+            .text(v-else) 下拉刷新
 .es_scroll_hint.es_hint_bottom(
     :class="{ active: hint.pullRatio.y.after > 1.0, es_back_hint: runtimeData.back }", 
     :style="[styleY, {bottom: `-${hint.size.y.max}px`}]",
-    @mouseenter="mouseenter",
-    @mouseleave="mouseleave",
+    @mouseenter="mouseenter('y')",
+    @mouseleave="mouseleave('y')",
 )
     .es_countdown_bar(:class="{show: hint.size.y.after > 0}")
         .es_progress_fill(
             v-if="hint.size.y.after > 0",
             :key="runtimeData.countdown.y.key",
             :class="{ es_progress_run: runtimeData.countdown.y.run }",            
-            @animationstart="hint.countdownStart",
-            @animationend="hint.countdownEnd",
+            @animationstart="hint.countdownStart('y')",
+            @animationend="hint.countdownEnd('y')",
         )
     slot(name="hint_bottom")
         .es_hint_content
             .icon 🔄
-            .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.after > 1.0 ? '释放加载' : '上拉加载' }}  
-            .text(v-else) {{ hint.pullRatio.y.after > 1.0 ? 'A' : 'B' }}
+            .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.after > 1.0 ? '释放加载' : '上拉加载' }}
+            .text(v-else) 上拉加载
 .es_scroll_hint.es_hint_left(
     v-if="showXHint",
     :class="{ active: hint.pullRatio.x.before > 1.0, es_back_hint: runtimeData.back }", 
     :style="[styleX, {left: `-${hint.size.x.max}px`, top: '0'}]",
+    @mouseenter="mouseenter('x')",
+    @mouseleave="mouseleave('x')",
 )
+    .es_countdown_bar(:class="{show: hint.size.x.before > 0}")
+        .es_progress_fill(
+            v-if="hint.size.x.before > 0",
+            :key="runtimeData.countdown.x.key",
+            :class="{ es_progress_run: runtimeData.countdown.x.run }",            
+            @animationstart="hint.countdownStart('x')",
+            @animationend="hint.countdownEnd('x')",
+        )
     slot(name="hint_left")
         .es_hint_content
             .icon ◀
@@ -93,8 +103,18 @@ export default defineComponent({
 .es_scroll_hint.es_hint_right(
     v-if="showXHint",
     :class="{ active: hint.pullRatio.x.after > 1.0, es_back_hint: runtimeData.back }", 
-    :style="[styleX, {right: `-${hint.size.x.max}px`, top: '0'}]",
+    :style="[styleX, {right: `-${hint.size.x.max}px`, left: 'auto', top: '0'}]",
+    @mouseenter="mouseenter('x')",
+    @mouseleave="mouseleave('x')",
 )
+    .es_countdown_bar(:class="{show: hint.size.x.after > 0}")
+        .es_progress_fill(
+            v-if="hint.size.x.after > 0",
+            :key="runtimeData.countdown.x.key",
+            :class="{ es_progress_run: runtimeData.countdown.x.run }",            
+            @animationstart="hint.countdownStart('x')",
+            @animationend="hint.countdownEnd('x')",
+        )
     slot(name="hint_right")
         .es_hint_content
             .icon ▶
@@ -223,29 +243,61 @@ export default defineComponent({
         }
     }
 
-    // 横向条带: 宽 = size.x.max, 高 = 视口高, 垂直随内容补偿
+    // 横向条带(左/右): 宽 = size.x.max, 高 = 视口高, 垂直随内容补偿
     &.es_hint_left {
         background: linear-gradient(to right, #eff6ff, #fff);
         border-right: 1px solid rgba(59, 130, 246, 0.1);
 
-        .icon {
-            transform: rotate(-90deg);
-        }
         &.active .icon {
-            transform: rotate(-90deg) scale(1.3);
+            transform: scale(1.3);
         }
     }
 
+    // right 定位需解除基类 left:0（否则 width 固定时 left 优先、right 被忽略）
     &.es_hint_right {
+        left: auto;
         background: linear-gradient(to left, #eff6ff, #fff);
         border-left: 1px solid rgba(59, 130, 246, 0.1);
 
-        .icon {
-            transform: rotate(90deg);
-        }
         &.active .icon {
-            transform: rotate(90deg) scale(1.3);
+            transform: scale(1.3);
         }
+    }
+
+    // 左右面板的倒计时进度条: 放在面板内侧边缘的竖条, 由下(外)向上(内)缩短
+    &.es_hint_left .es_countdown_bar,
+    &.es_hint_right .es_countdown_bar {
+        top: 50%;
+        width: fit-content;
+        height: 60%;
+        transform: translateY(-50%);
+        padding: 5px;
+    }
+    &.es_hint_left .es_progress_fill,
+    &.es_hint_right .es_progress_fill {
+        width: 3px;
+        height: 100%;
+        border-radius: 3px;
+        background: #3b82f6;
+        opacity: 0.6;
+    }
+    // 纵向进度由下(外)向上(内)收缩: 用 height 动画
+    &.es_hint_left .es_progress_fill {
+        animation-name: shrink-h;
+        bottom: 0;
+    }
+    &.es_hint_right .es_progress_fill {
+        animation-name: shrink-h;
+        bottom: 0;
+    }
+}
+
+@keyframes shrink-h {
+    from {
+        height: 100%;
+    }
+    to {
+        height: 0%;
     }
 }
 </style>

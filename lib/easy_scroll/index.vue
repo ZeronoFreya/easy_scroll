@@ -130,23 +130,38 @@ export default defineComponent({
         const onWheel = (e) => {
             scrollCtrl.wheel.onWheel(e)
             if (hint) {
-                hint.wheel(e.wheelDeltaY)
+                // 把本次滚轮的各轴分量路由到 hint(与 use_wheel 的轴路由平行)
+                const vertical = e.wheelDeltaY ?? 0
+                const horizontal = e.wheelDeltaX ?? 0
+                if (props.scrollAxis === 'x') {
+                    const d = horizontal || vertical
+                    if (d) hint.wheel(d, 'x')
+                } else if (props.scrollAxis === 'y') {
+                    if (vertical) hint.wheel(vertical, 'y')
+                } else {
+                    if (e.shiftKey) {
+                        if (vertical) hint.wheel(vertical, 'x')
+                    } else {
+                        if (vertical) hint.wheel(vertical, 'y')
+                        if (horizontal) hint.wheel(horizontal, 'x')
+                    }
+                }
             }
             // 滚轮停格后自动回弹（wheel 无"释放"事件）
             scheduleWheelSettle()
         }
 
         // wheel 是离散事件、没有"释放"语义：滚轮停格(delay 内无新事件)后
-        // 若仍停留在过界区，则触发统一归位(back 快速回弹)。拖动/中键接管中不打扰。
+        // 若仍停留在过界区，则触发统一归位(back 快速回弹)。拖动/中键接管中不打扰，
+        // 鼠标悬停在对应轴的面板上时让路（交给 mouseleave 归位）。
         let wheelSettleTimer = null
-        const scheduleWheelSettle = (delay = 300) => {
+        const scheduleWheelSettle = (delay = 500) => {
             clearTimeout(wheelSettleTimer)
             wheelSettleTimer = setTimeout(() => {
                 wheelSettleTimer = null
                 if (runtimeData.draging || runtimeData.currCtrlType) return
-                // 鼠标停留在 hint 面板上时让路（交给 mouseleave 归位）
-                if (hint && hint.mouseInHint) return
                 for (const axis of ['x', 'y']) {
+                    if (hint && hint.mouseInHint[axis]) continue
                     const s = runtimeData.scroll[axis]
                     const max = runtimeData.maxScroll[axis]
                     if (s < 0 || s > max) {
