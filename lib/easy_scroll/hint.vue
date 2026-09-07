@@ -5,14 +5,25 @@ export default defineComponent({
     setup() {
         const hint = inject('hint')
         const runtimeData = inject('runtimeData')
+        const scrollAxis = inject('scrollAxis', 'xy')
+
+        const showXHint = computed(() => scrollAxis.includes('x'))
 
         const displayHintX = computed(() => runtimeData.scroll.x.toFixed(2))
         const displayHintY = computed(() => runtimeData.scroll.y.toFixed(2))
 
+        // 纵向条带(上/下): 宽=视口宽, 高=过界上限; 水平随内容补偿
         const styleY = computed(() => ({
             width: runtimeData.viewportSize.w + 'px',
             height: hint.size.y.max + 'px',
             transform: `translateX(${displayHintX.value}px)`,
+        }))
+
+        // 横向条带(左/右): 宽=过界上限, 高=视口高; 垂直随内容补偿
+        const styleX = computed(() => ({
+            width: hint.size.x.max + 'px',
+            height: runtimeData.viewportSize.h + 'px',
+            transform: `translateY(${displayHintY.value}px)`,
         }))
 
         const mouseenter = () => {
@@ -25,7 +36,7 @@ export default defineComponent({
             hint.countdownEnd()
         }
 
-        return { hint, runtimeData, displayHintX, styleY, mouseenter, mouseleave }
+        return { hint, runtimeData, styleY, styleX, showXHint, mouseenter, mouseleave }
     },
 })
 </script>
@@ -68,7 +79,27 @@ export default defineComponent({
         .es_hint_content
             .icon 🔄
             .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.after > 1.0 ? '释放加载' : '上拉加载' }}  
-            .text(v-else) {{ hint.pullRatio.y.before > 1.0 ? 'A' : 'B' }}     
+            .text(v-else) {{ hint.pullRatio.y.after > 1.0 ? 'A' : 'B' }}
+.es_scroll_hint.es_hint_left(
+    v-if="showXHint",
+    :class="{ active: hint.pullRatio.x.before > 1.0, es_back_hint: runtimeData.back }", 
+    :style="[styleX, {left: `-${hint.size.x.max}px`, top: '0'}]",
+)
+    slot(name="hint_left")
+        .es_hint_content
+            .icon ◀
+            .text(v-if="runtimeData.draging") {{ hint.pullRatio.x.before > 1.0 ? '到头了' : '向左拖' }}
+            .text(v-else) 已到最左
+.es_scroll_hint.es_hint_right(
+    v-if="showXHint",
+    :class="{ active: hint.pullRatio.x.after > 1.0, es_back_hint: runtimeData.back }", 
+    :style="[styleX, {right: `-${hint.size.x.max}px`, top: '0'}]",
+)
+    slot(name="hint_right")
+        .es_hint_content
+            .icon ▶
+            .text(v-if="runtimeData.draging") {{ hint.pullRatio.x.after > 1.0 ? '到头了' : '向右拖' }}
+            .text(v-else) 已到最右
 </template>
 
 <style lang="scss">
@@ -189,6 +220,31 @@ export default defineComponent({
             border-radius: 3px;
             background: #3b82f6;
             opacity: 0.6;
+        }
+    }
+
+    // 横向条带: 宽 = size.x.max, 高 = 视口高, 垂直随内容补偿
+    &.es_hint_left {
+        background: linear-gradient(to right, #eff6ff, #fff);
+        border-right: 1px solid rgba(59, 130, 246, 0.1);
+
+        .icon {
+            transform: rotate(-90deg);
+        }
+        &.active .icon {
+            transform: rotate(-90deg) scale(1.3);
+        }
+    }
+
+    &.es_hint_right {
+        background: linear-gradient(to left, #eff6ff, #fff);
+        border-left: 1px solid rgba(59, 130, 246, 0.1);
+
+        .icon {
+            transform: rotate(90deg);
+        }
+        &.active .icon {
+            transform: rotate(90deg) scale(1.3);
         }
     }
 }

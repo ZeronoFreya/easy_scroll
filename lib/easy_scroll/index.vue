@@ -13,6 +13,7 @@ import {
 import sProps from './props.js'
 import { safeDivide } from './utils.js'
 import useOverscroll from './use_overscroll.js'
+import release from './release.js'
 
 import Cursor from './cursor.vue'
 import Hint from './hint.vue'
@@ -112,6 +113,7 @@ export default defineComponent({
 
         const hint = props.showHint ? reactive(useHint(runtimeData)) : null
         provide('hint', hint)
+        provide('scrollAxis', props.scrollAxis)
 
         // 过界能力：标记判定与过界上限统一在此生产，与 hint UI 解耦
         const overscroll = useOverscroll(runtimeData)
@@ -130,6 +132,28 @@ export default defineComponent({
             if (hint) {
                 hint.wheel(e.wheelDeltaY)
             }
+            // 滚轮停格后自动回弹（wheel 无"释放"事件）
+            scheduleWheelSettle()
+        }
+
+        // wheel 是离散事件、没有"释放"语义：滚轮停格(delay 内无新事件)后
+        // 若仍停留在过界区，则触发统一归位(back 快速回弹)。拖动/中键接管中不打扰。
+        let wheelSettleTimer = null
+        const scheduleWheelSettle = (delay = 300) => {
+            clearTimeout(wheelSettleTimer)
+            wheelSettleTimer = setTimeout(() => {
+                wheelSettleTimer = null
+                if (runtimeData.draging || runtimeData.currCtrlType) return
+                // 鼠标停留在 hint 面板上时让路（交给 mouseleave 归位）
+                if (hint && hint.mouseInHint) return
+                for (const axis of ['x', 'y']) {
+                    const s = runtimeData.scroll[axis]
+                    const max = runtimeData.maxScroll[axis]
+                    if (s < 0 || s > max) {
+                        release(runtimeData, axis)
+                    }
+                }
+            }, delay)
         }
 
         // const physicsLoop = useLoop(runtimeData, scrollCtrl, hint)
@@ -168,10 +192,10 @@ export default defineComponent({
                     hint.resize()
                 }
 
-                // 过界上限由启用方(当前为 hint)提供，交给过界能力统一持有
+                // 过界拉伸仅允许发生在该轴确实可滚动时(有内容溢出)
                 overscroll.applyLimit({
-                    x: hint ? hint.size.x.max : 0,
-                    y: hint ? hint.size.y.max : 0,
+                    x: hint && runtimeData.maxScroll.x > 0 ? hint.size.x.max : 0,
+                    y: hint && runtimeData.maxScroll.y > 0 ? hint.size.y.max : 0,
                 })
             }
         }
@@ -237,6 +261,7 @@ export default defineComponent({
         onBeforeUnmount(() => {
             // stopLoop()
             // if (freezeTimer) clearTimeout(freezeTimer)
+            clearTimeout(wheelSettleTimer)
             // window.removeEventListener('mousemove', onDrag)
             // window.removeEventListener('mouseup', endDrag)
             // window.removeEventListener('touchmove', onDrag)
