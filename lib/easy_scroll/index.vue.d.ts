@@ -1,50 +1,51 @@
-declare const _default: import('vue').DefineComponent<
+import type { DefineComponent } from 'vue'
+
+declare const EasyScroll: DefineComponent<
     {
         /**
-         * 滚动方向
+         * 允许滚动的轴
+         * - 'x' 仅横向
+         * - 'y' 仅纵向
+         * - 'xy' 双向（默认）
          * @default 'xy'
          */
         scrollAxis?: 'x' | 'y' | 'xy'
 
         /**
-         * 是否使用滚动条
+         * 是否显示滚动条（'xy' 时含横向/纵向两条）
          * @default true
          */
         scrollBar?: boolean
 
         /**
-         * 滚动条启用摇杆模式
+         * 滚动条启用摇杆模式（目前作用于纵向轨道）
          * @default false
          */
         scrollJoy?: boolean
 
         /**
-         * 是否使用鼠标中键导航
+         * 是否启用鼠标中键平移导航
          * @default false
          */
         midMouseNav?: boolean
 
         /**
-         * 是否使用过界提示
+         * 是否启用过界提示面板（顶部下拉/底部上拉/左侧/右侧）
          * @default false
          */
         showHint?: boolean
     },
+    {},
+    {},
+    {},
+    {},
     {
         /**
-         * 滚动到指定位置
-         * @param x X坐标
-         * @param y Y坐标
+         * 默认内容插槽；未提供时显示内置示例列表。
+         * 命名插槽: hint_top / hint_bottom / hint_left / hint_right / scroll_y / scroll_x
          */
-        scrollTo: (x: number, y: number) => void
-        /**
-         * 滚动到顶部
-         */
-        scrollToTop: () => void
-        /**
-         * 滚动到底部
-         */
-        scrollToBottom: () => void
+        default?: () => unknown
     }
 >
-export default _default
+
+export default EasyScroll

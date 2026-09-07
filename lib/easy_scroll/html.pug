@@ -7,7 +7,8 @@
             Hint(v-if="showHint")
                 template(v-for="(_, name) in filterSlots('hint')", :key="name", #[name]="slotProps")
                     slot(:name="name", v-bind="slotProps")
-            slot
+            .es_scroll_slot
+                slot
     ScrollBar(v-if="scrollBar && scrollAxis != 'x'", scroll="y", :scrollJoy="scrollJoy")
     ScrollBar(v-if="scrollBar && scrollAxis != 'y'", scroll="x", :scrollJoy="scrollJoy")
     Cursor(v-if="midMouseNav && scrollCtrl.midnav?.active", 

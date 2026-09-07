@@ -3,13 +3,30 @@
     "version": "0.0.0",
     "private": true,
     "type": "module",
-    "main": "lib/index.js",
-    "types": "lib/easy_scroll/index.vue.d.ts",
+    "main": "dist/easy_scroll.js",
+    "module": "dist/easy_scroll.js",
+    "types": "dist/easy_scroll.d.ts",
+    "files": [
+        "dist"
+    ],
+    "sideEffects": [
+        "dist/easy_scroll.css"
+    ],
+    "exports": {
+        ".": {
+            "types": "./dist/easy_scroll.d.ts",
+            "import": "./dist/easy_scroll.js",
+            "default": "./dist/easy_scroll.js"
+        },
+        "./easy_scroll.css": "./dist/easy_scroll.css",
+        "./package.json": "./package.json"
+    },
     "scripts": {
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "format": "prettier --write src/"
+        "format": "prettier --write src/",
+        "prepare": "vite build"
     },
     "dependencies": {
         "normalize.css": "^8.0.1",

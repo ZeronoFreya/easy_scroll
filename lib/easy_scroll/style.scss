@@ -2,31 +2,8 @@
     transition: transform 1.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 .es_back_scroll {
-    // transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-    // transition: none;
-    // animation: realHit 0.6s steps(30);
-    // animation: dropAndBounce 0.7s cubic-bezier(0.4, 0, 0.6, 1);
-    // transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
-
-// @keyframes realHit {
-//     /* 自由落体撞地 */
-//     0% { transform: translateY(200px); }
-//     30% { transform: translateY(0); }
-//     55% { transform: translateY(5%); }
-//     65% { transform: translateY(0); }        /* 💥 第一次撞击 */
-
-//     /* 反弹（速度损失约40%） */
-//     75% { transform: translateY(40px); }    /* 弹起高度变低 */
-//     85% { transform: translateY(0); }        /* 💥 第二次撞击 */
-
-//     /* 二次反弹 */
-//     91% { transform: translateY(12px); }
-//     96% { transform: translateY(0); }        /* 💥 第三次撞击 */
-
-//     100% { transform: translateY(0); }
-// }
 
 .es_scroll_containter {
     position: relative;
@@ -34,7 +11,6 @@
     height: fit-content;
 
     .es_scroll_box {
-        anchor-name: --hint-anchor;
         position: relative;
         z-index: 1;
         margin: 0;
@@ -50,39 +26,25 @@
         }
     }
     .es_scroll_content {
-        list-style: none;
+        // list-style: none;
         padding: 0;
         margin: 0;
         will-change: transform;
         background-color: var(--box-bg);
         position: relative;
         z-index: 1;
-        // background: #f0f0f0;
 
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
+        // display: flex;
+        // flex-direction: column;
+        // align-items: center;
+        // gap: 20px;
         width: fit-content;
-
-        
-
-        // &.smooth {
-        //     transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        // }
+        min-width: 100%;
     }
-    li {
-        width: 500px;
-        height: 50px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-bottom: 1px solid #f0f0f0;
-        color: #333;
-        font-size: 16px;
-        white-space: nowrap;
-        background-color: #b2cfff;
+    .es_scroll_slot{
+        width: fit-content;
+        height: fit-content;
+        padding: 0;
+        margin: 0;
     }
 }
-
-
