@@ -173,11 +173,25 @@ export default defineComponent({
         const displayScrollX = computed(() => -runtimeData.scroll.x.toFixed(2))
         const displayScrollY = computed(() => -runtimeData.scroll.y.toFixed(2))
 
-        const updateMaxScroll = () => {
+        const afterResize = () => {
             if (ulRef.value && boxRef.value) {
+
+                let boxW = boxRef.value.offsetWidth
+                let boxH = boxRef.value.offsetHeight
+                if(props.autoSize){
+                    if(boxW >= ulRef.value.offsetWidth){
+                        boxW = ulRef.value.offsetWidth
+                        boxRef.value.style.width = boxW + 'px'
+                    }
+                    if(boxH >= ulRef.value.offsetHeight){
+                        boxH = ulRef.value.offsetHeight
+                        boxRef.value.style.height = boxH + 'px'
+                    }
+                }
+
                 runtimeData.viewportSize = {
-                    w: boxRef.value.offsetWidth,
-                    h: boxRef.value.offsetHeight,
+                    w: boxW,
+                    h: boxH,
                 }
                 runtimeData.contentSize = {
                     w: ulRef.value.offsetWidth,
@@ -249,7 +263,7 @@ export default defineComponent({
             box: 'border-box', // 确保 CSS 计算尺寸时包括边框和内边距
         }
         const observer = new ResizeObserver(() => {
-            updateMaxScroll()
+            afterResize()
         })
 
         onMounted(() => {
@@ -265,7 +279,7 @@ export default defineComponent({
                 scrollCtrl.scroll.init()
             }
 
-            updateMaxScroll()
+            afterResize()
             observer.observe(boxRef.value, options)
             observer.observe(ulRef.value, options)
         })

@@ -20,14 +20,43 @@ div.page(:data-es-theme="theme")
     .toolbar
         span.label theme: {{ theme }}
         button(@click="toggleTheme") {{ theme === 'light' ? '切换到深色' : '切换到亮色' }}
-    EasyScroll(
+    .flex
+        div
+            EasyScroll.easy_scroll(
+                scrollAxis="y",
+                :midMouseNav="true",
+                :scrollBar="true",
+                :scrollJoy="false",
+                :showHint="true",
+                :autoSize="true",
+                :scrollReverse="true",
+                :theme="theme",
+            )
+                ul.ul1
+                    li(v-for="i in 25" :key="i") 列表项 - {{ i }}
+        div
+            EasyScroll.easy_scroll(
+                scrollAxis="y",
+                :midMouseNav="true",
+                :scrollBar="true",
+                :scrollJoy="false",
+                :showHint="true",
+                :autoSize="true",
+                :theme="theme",
+            )
+                ul.ul1
+                    li(v-for="i in 5" :key="i") 列表项 - {{ i }}
+    h1
+    EasyScroll.easy_scroll2(
+        scrollAxis="x",
         :midMouseNav="true",
         :scrollBar="true",
         :scrollJoy="false",
         :showHint="true",
+        :scrollReverse="true",
         :theme="theme",
     )
-        ul
+        ul.ul2
             li(v-for="i in 50" :key="i") 列表项 - {{ i }}
 </template>
 
@@ -40,6 +69,23 @@ div.page(:data-es-theme="theme")
     &[data-es-theme='dark'] {
         --es-page-bg: #0f1115;
     }
+
+}
+.flex{
+    display: flex;
+    gap: 30px;
+}
+.easy_scroll{
+    width: 30vw;
+    max-height: 60vh;
+    background: red;
+    // padding: 15px;
+}
+.easy_scroll2{
+    width: 60vw;
+    height: 10vh;
+    background: red;
+    // padding: 15px;
 }
 .toolbar {
     display: flex;
@@ -51,10 +97,17 @@ div.page(:data-es-theme="theme")
 .page[data-es-theme='dark'] .toolbar {
     --es-txt: #e5e7eb;
 }
-ul{
-    width: 500px;
+.ul1{
+    width: 100%;
     display: flex;
     flex-direction: column;
+    gap: 12px;
+    background-color: gold;
+    padding: 0;
+}
+.ul2{
+    display: flex;
+    height: 100%;
     gap: 12px;
     background-color: gold;
     padding: 0;

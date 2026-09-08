@@ -7,7 +7,7 @@
 
 .es_scroll_containter {
     // === 颜色 token(默认亮色) ===
-    --es-bg: #ffffff;
+    // --es-bg: #ffffff;
     --es-surface: #f7f8fa;
     --es-text: #333333;
     --es-text-secondary: #666666;
@@ -25,7 +25,7 @@
 
     // === 深色主题覆盖 ===
     &[data-es-theme='dark'] {
-        --es-bg: #1f2430;
+        // --es-bg: #1f2430;
         --es-surface: #161a22;
         --es-text: #e5e7eb;
         --es-text-secondary: #9ca3af;
@@ -43,18 +43,23 @@
     }
 
     position: relative;
-    width: fit-content;
-    height: fit-content;
+    // width: 100vw;
+    // height: 100vh;
+
+    max-width: min(100%, 100vw);
+    max-height: min(100%, 100vh);
+
+    
 
     .es_scroll_box {
         position: relative;
         z-index: 1;
         margin: 0;
-        padding: 0;
+        // padding: 0;
         font-family: sans-serif;
-        background-color: var(--es-bg);
-        width: 30vw;
-        height: 60vh;
+        // background-color: var(--es-bg);
+        width: 100%;
+        height: 100%;
         overflow: hidden;
         user-select: none;
         &:active {
@@ -71,11 +76,8 @@
 
         width: fit-content;
         min-width: 100%;
-    }
-    .es_scroll_slot{
-        width: fit-content;
-        height: fit-content;
-        padding: 0;
-        margin: 0;
+
+        display: flex;
+        flex-direction: column;
     }
 }

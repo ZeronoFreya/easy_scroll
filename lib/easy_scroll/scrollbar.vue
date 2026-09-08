@@ -11,6 +11,8 @@ export default defineComponent({
             validator: (value) => ['x', 'y'].includes(value),
         },
         scrollJoy: Boolean,
+        scrollInside: Boolean,
+        scrollReverse: Boolean,
         // 空 = 不传送(留在组件容器内); 非空选择器 = Teleport 目标
         teleport: {
             type: String,
@@ -41,6 +43,33 @@ export default defineComponent({
         onMounted(() => {
             ctrlScroll.resize()
             requestAnimationFrame(() => ctrlScroll.resize())
+        })
+
+        const rootStyle = computed(() => {
+            
+            const r = props.scrollReverse
+            const pos = isY
+                ? {
+                      top: '0px',
+                      bottom: 'auto',
+                      left: r ? '0px' : 'auto',
+                      right: r ? 'auto' : '0px',
+                  }
+                : {
+                      top: r ? '0px' : 'auto',
+                      bottom: r ? 'auto' : '0px',
+                      left: '0px',
+                      right: 'auto',
+                  }
+            if (props.scrollInside){
+                return pos
+            }
+            const k = isY ? 'X' : 'Y'
+            const v = r ? '-100%' : '100%'
+            return {
+                ...pos,
+                transform: `translate${k}(${v})`,
+            }
         })
 
         const thumbClass = computed(() => ({
@@ -75,14 +104,14 @@ export default defineComponent({
                 transform: `translate(${pos}px, -50%)`,
             }
         })
-        return { runtimeData, ctrlScroll, isY, setBox, thumbClass, thumbStyle, theme }
+        return { runtimeData, ctrlScroll, isY, setBox, rootStyle, thumbClass, thumbStyle, theme }
     },
 })
 </script>
 
 <template lang="pug">
 Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
-    .es_scroll_bar(:class="isY ? 'es_scroll_y' : 'es_scroll_x'", :ref="setBox", :data-es-theme="theme")
+    .es_scroll_bar(:class="isY ? 'es_scroll_y' : 'es_scroll_x'", :ref="setBox", :data-es-theme="theme", :style="rootStyle")
         slot(:name="`scroll_${$props.scroll}`", 
             :sizeRatio="ctrlScroll.sizeRatio",
             :thumb="ctrlScroll.thumbRect[$props.scroll]",
@@ -155,8 +184,8 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
 
     // 纵向条（右侧）
     &.es_scroll_y {
-        top: 0;
-        right: 0;
+        // top: 0;
+        // right: 0;
         width: var(--es-width);
         height: 100%;
         padding: var(--es-width) 0;
@@ -184,8 +213,8 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
 
     // 横向条（底部）
     &.es_scroll_x {
-        bottom: 0;
-        left: 0;
+        // bottom: 0;
+        // left: 0;
         width: 100%;
         height: var(--es-width);
         padding: 0 var(--es-width);

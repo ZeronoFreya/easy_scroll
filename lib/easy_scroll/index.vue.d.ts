@@ -24,6 +24,18 @@ declare const EasyScroll: DefineComponent<
         scrollJoy?: boolean
 
         /**
+         * 滚动条显示在容器内部，会遮挡内容
+         * @default false
+         */
+        scrollInside?: boolean
+
+        /**
+         * 滚动条位置反转到对侧，即: y轴在左侧，x轴在上方
+         * @default false
+         */
+        scrollReverse?: boolean
+
+        /**
          * 是否启用鼠标中键平移导航
          * @default false
          */
@@ -34,6 +46,12 @@ declare const EasyScroll: DefineComponent<
          * @default false
          */
         showHint?: boolean
+
+        /**
+         * 自适应尺寸，通过max-[width|height]限制，默认 min(100%，[100vw|100vh])
+         * @default false
+         */
+        autoSize?: boolean
 
         /**
          * 滚动条 teleport 目标(选择器)。空字符串(默认)=不传送,保留在组件容器内;

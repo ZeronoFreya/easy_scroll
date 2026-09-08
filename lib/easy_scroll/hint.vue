@@ -198,6 +198,7 @@ export default defineComponent({
     }
 
     &.es_hint_top {
+        max-width: 100%;
         background: linear-gradient(to bottom, var(--es-hint-start), var(--es-hint-end));
         border-bottom: 1px solid var(--es-hint-border);
 
@@ -222,6 +223,7 @@ export default defineComponent({
     }
 
     &.es_hint_bottom {
+        max-width: 100%;
         background: linear-gradient(to top, var(--es-hint-start), var(--es-hint-end));
         border-top: 1px solid var(--es-hint-border);
         &.active .icon {
@@ -246,6 +248,7 @@ export default defineComponent({
 
     // 横向条带(左/右): 宽 = size.x.max, 高 = 视口高, 垂直随内容补偿
     &.es_hint_left {
+        max-height: 100%;
         background: linear-gradient(to right, var(--es-hint-start), var(--es-hint-end));
         border-right: 1px solid var(--es-hint-border);
 
@@ -256,6 +259,7 @@ export default defineComponent({
 
     // right 定位需解除基类 left:0（否则 width 固定时 left 优先、right 被忽略）
     &.es_hint_right {
+        max-height: 100%;
         left: auto;
         background: linear-gradient(to left, var(--es-hint-start), var(--es-hint-end));
         border-left: 1px solid var(--es-hint-border);
