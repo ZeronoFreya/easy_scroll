@@ -11,7 +11,7 @@ import {
     onBeforeUnmount,
 } from 'vue'
 import sProps from './props.js'
-import { safeDivide } from './utils.js'
+import { clamp, readWheel, safeDivide } from './utils.js'
 import useOverscroll from './use_overscroll.js'
 import release from './release.js'
 
@@ -128,10 +128,10 @@ export default defineComponent({
         // 组合根桥接: 滚轮事件 → 内核滚动; hint 启用时再通知其响应过界区滚轮方向
         const onWheel = (e) => {
             scrollCtrl.wheel.onWheel(e)
+            // 各轴分量与 use_wheel 同源(readWheel: 上/左为正), 避免符号歧义
+            const { x: horizontal, y: vertical } = readWheel(e)
             if (hint) {
                 // 把本次滚轮的各轴分量路由到 hint(与 use_wheel 的轴路由平行)
-                const vertical = e.wheelDeltaY ?? 0
-                const horizontal = e.wheelDeltaX ?? 0
                 if (props.scrollAxis === 'x') {
                     const d = horizontal || vertical
                     if (d) hint.wheel(d, 'x')
@@ -223,6 +223,17 @@ export default defineComponent({
                     x: hint && runtimeData.maxScroll.x > 0 ? hint.size.x.max : 0,
                     y: hint && runtimeData.maxScroll.y > 0 ? hint.size.y.max : 0,
                 })
+
+                // 内容/容器收缩可能使当前 scroll 越出新边界(如窗口变宽后无需再滚)：
+                // 立即收敛回合法区, 避免无输入时永久停留在过界视觉状态。
+                for (const axis of ['x', 'y']) {
+                    const max = runtimeData.maxScroll[axis]
+                    const s = runtimeData.scroll[axis]
+                    if (s < 0 || s > max) {
+                        runtimeData.back = true
+                        runtimeData.scroll[axis] = clamp(s, 0, max)
+                    }
+                }
             }
         }
 
