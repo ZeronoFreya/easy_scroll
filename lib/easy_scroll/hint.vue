@@ -5,9 +5,6 @@ export default defineComponent({
     setup() {
         const hint = inject('hint')
         const runtimeData = inject('runtimeData')
-        const scrollAxis = inject('scrollAxis', 'xy')
-
-        const showXHint = computed(() => scrollAxis.includes('x'))
 
         const displayHintX = computed(() => runtimeData.scroll.x.toFixed(2))
         const displayHintY = computed(() => runtimeData.scroll.y.toFixed(2))
@@ -36,7 +33,7 @@ export default defineComponent({
             hint.countdownEnd(axis)
         }
 
-        return { hint, runtimeData, styleY, styleX, showXHint, mouseenter, mouseleave }
+        return { hint, runtimeData, styleY, styleX, mouseenter, mouseleave }
     },
 })
 </script>
@@ -59,9 +56,9 @@ export default defineComponent({
         )
     slot(name="hint_top")
         .es_hint_content
-            .icon 🔄
-            .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.before > 1.0 ? '释放刷新' : '下拉刷新' }}
-            .text(v-else) 下拉刷新
+            .icon Top
+            .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.before > 1.0 ? '释放' : '下拉' }}
+            .text(v-else) 到顶了
 .es_scroll_hint.es_hint_bottom(
     v-if="runtimeData.maxScroll.y > 0",
     :class="{ active: hint.pullRatio.y.after > 1.0, es_back_hint: runtimeData.back }", 
@@ -79,11 +76,11 @@ export default defineComponent({
         )
     slot(name="hint_bottom")
         .es_hint_content
-            .icon 🔄
-            .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.after > 1.0 ? '释放加载' : '上拉加载' }}
-            .text(v-else) 上拉加载
+            .icon Bottom
+            .text(v-if="runtimeData.draging") {{ hint.pullRatio.y.after > 1.0 ? '释放' : '上拉' }}
+            .text(v-else) 到底了
 .es_scroll_hint.es_hint_left(
-    v-if="showXHint && runtimeData.maxScroll.x > 0",
+    v-if="runtimeData.maxScroll.x > 0",
     :class="{ active: hint.pullRatio.x.before > 1.0, es_back_hint: runtimeData.back }", 
     :style="[styleX, {left: `-${hint.size.x.max}px`, top: '0'}]",
     @mouseenter="mouseenter('x')",
@@ -99,11 +96,11 @@ export default defineComponent({
         )
     slot(name="hint_left")
         .es_hint_content
-            .icon ◀
+            .icon Left
             .text(v-if="runtimeData.draging") {{ hint.pullRatio.x.before > 1.0 ? '到头了' : '向左拖' }}
             .text(v-else) 已到最左
 .es_scroll_hint.es_hint_right(
-    v-if="showXHint && runtimeData.maxScroll.x > 0",
+    v-if="runtimeData.maxScroll.x > 0",
     :class="{ active: hint.pullRatio.x.after > 1.0, es_back_hint: runtimeData.back }", 
     :style="[styleX, {right: `-${hint.size.x.max}px`, left: 'auto', top: '0'}]",
     @mouseenter="mouseenter('x')",
@@ -119,7 +116,7 @@ export default defineComponent({
         )
     slot(name="hint_right")
         .es_hint_content
-            .icon ▶
+            .icon Right
             .text(v-if="runtimeData.draging") {{ hint.pullRatio.x.after > 1.0 ? '到头了' : '向右拖' }}
             .text(v-else) 已到最右
 </template>
@@ -202,9 +199,9 @@ export default defineComponent({
         background: linear-gradient(to bottom, var(--es-hint-start), var(--es-hint-end));
         border-bottom: 1px solid var(--es-hint-border);
 
-        &.active .icon {
-            transform: rotate(180deg) scale(1.2);
-        }
+        // &.active .icon {
+        //     transform: rotate(180deg) scale(1.2);
+        // }
 
         .es_countdown_bar {
             bottom: 0;
@@ -226,9 +223,9 @@ export default defineComponent({
         max-width: 100%;
         background: linear-gradient(to top, var(--es-hint-start), var(--es-hint-end));
         border-top: 1px solid var(--es-hint-border);
-        &.active .icon {
-            transform: rotate(-180deg) scale(1.2);
-        }
+        // &.active .icon {
+        //     transform: rotate(-180deg) scale(1.2);
+        // }
 
         .es_countdown_bar {
             top: 0;
@@ -252,9 +249,9 @@ export default defineComponent({
         background: linear-gradient(to right, var(--es-hint-start), var(--es-hint-end));
         border-right: 1px solid var(--es-hint-border);
 
-        &.active .icon {
-            transform: scale(1.3);
-        }
+        // &.active .icon {
+        //     transform: scale(1.3);
+        // }
     }
 
     // right 定位需解除基类 left:0（否则 width 固定时 left 优先、right 被忽略）
@@ -264,9 +261,9 @@ export default defineComponent({
         background: linear-gradient(to left, var(--es-hint-start), var(--es-hint-end));
         border-left: 1px solid var(--es-hint-border);
 
-        &.active .icon {
-            transform: scale(1.3);
-        }
+        // &.active .icon {
+        //     transform: scale(1.3);
+        // }
     }
 
     // 左右面板的倒计时进度条: 放在面板内侧边缘的竖条, 由下(外)向上(内)缩短

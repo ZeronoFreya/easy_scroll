@@ -112,7 +112,6 @@ export default defineComponent({
 
         const hint = props.showHint ? reactive(useHint(runtimeData)) : null
         provide('hint', hint)
-        provide('scrollAxis', props.scrollAxis)
 
         // 过界能力：标记判定与过界上限统一在此生产，与 hint UI 解耦
         const overscroll = useOverscroll(runtimeData)
@@ -124,6 +123,9 @@ export default defineComponent({
             midnav: props.midMouseNav ? useMidNav(runtimeData, boxRef, props.scrollAxis) : null,
         })
         provide('scrollCtrl', scrollCtrl)
+
+        const checkX = new Set(['x', 'a']);
+        const checkY = new Set(['y', 'a']);
 
         // 组合根桥接: 滚轮事件 → 内核滚动; hint 启用时再通知其响应过界区滚轮方向
         const onWheel = (e) => {
@@ -179,11 +181,11 @@ export default defineComponent({
                 let boxW = boxRef.value.offsetWidth
                 let boxH = boxRef.value.offsetHeight
                 if(props.autoSize){
-                    if(boxW >= ulRef.value.offsetWidth){
+                    if(checkX.has(props.autoSize) && boxW >= ulRef.value.offsetWidth){
                         boxW = ulRef.value.offsetWidth
                         boxRef.value.style.width = boxW + 'px'
                     }
-                    if(boxH >= ulRef.value.offsetHeight){
+                    if(checkY.has(props.autoSize) && boxH >= ulRef.value.offsetHeight){
                         boxH = ulRef.value.offsetHeight
                         boxRef.value.style.height = boxH + 'px'
                     }
@@ -312,6 +314,8 @@ export default defineComponent({
             resolvedTheme,
             boxRef,
             ulRef,
+            checkX,
+            checkY,
             displayScrollX,
             displayScrollY,
             filterSlots,

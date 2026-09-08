@@ -26,10 +26,11 @@ div.page(:data-es-theme="theme")
                 scrollAxis="y",
                 :midMouseNav="true",
                 :scrollBar="true",
-                :scrollJoy="false",
+                scrollJoy="a",
                 :showHint="true",
-                :autoSize="true",
-                :scrollReverse="true",
+                autoSize="a",
+                scrollReverse="a",
+                offsetScrollY="80%",
                 :theme="theme",
             )
                 ul.ul1
@@ -39,9 +40,9 @@ div.page(:data-es-theme="theme")
                 scrollAxis="y",
                 :midMouseNav="true",
                 :scrollBar="true",
-                :scrollJoy="false",
+                scrollJoy="a",
                 :showHint="true",
-                :autoSize="true",
+                autoSize="y",
                 :theme="theme",
             )
                 ul.ul1
@@ -51,9 +52,9 @@ div.page(:data-es-theme="theme")
         scrollAxis="x",
         :midMouseNav="true",
         :scrollBar="true",
-        :scrollJoy="false",
+        scrollJoy="",
         :showHint="true",
-        :scrollReverse="true",
+        scrollReverse="a",
         :theme="theme",
     )
         ul.ul2
@@ -78,7 +79,7 @@ div.page(:data-es-theme="theme")
 .easy_scroll{
     width: 30vw;
     max-height: 60vh;
-    background: red;
+    // background: red;
     // padding: 15px;
 }
 .easy_scroll2{

@@ -4,15 +4,13 @@ import { clamp } from './utils.js'
 
 export default defineComponent({
     props: {
-        // 该条负责的轴: 'x' 渲染在底部, 'y' 渲染在右侧
         scroll: {
             type: String,
-            default: 'y',
-            validator: (value) => ['x', 'y'].includes(value),
+            required: true
         },
-        scrollJoy: Boolean,
-        scrollInside: Boolean,
-        scrollReverse: Boolean,
+        joytick: Boolean,
+        reverse: Boolean,
+        offset: String,
         // 空 = 不传送(留在组件容器内); 非空选择器 = Teleport 目标
         teleport: {
             type: String,
@@ -47,7 +45,7 @@ export default defineComponent({
 
         const rootStyle = computed(() => {
             
-            const r = props.scrollReverse
+            const r = props.reverse
             const pos = isY
                 ? {
                       top: '0px',
@@ -61,11 +59,11 @@ export default defineComponent({
                       left: '0px',
                       right: 'auto',
                   }
-            if (props.scrollInside){
-                return pos
-            }
+            // if (props.scrollInside){
+            //     return pos
+            // }
             const k = isY ? 'X' : 'Y'
-            const v = r ? '-100%' : '100%'
+            const v = r ? `-${props.offset}`.replace("--", "") : props.offset
             return {
                 ...pos,
                 transform: `translate${k}(${v})`,
@@ -73,7 +71,7 @@ export default defineComponent({
         })
 
         const thumbClass = computed(() => ({
-            joytick: props.scrollJoy,
+            joytick: props.joytick,
             // 仅当前拖动的轴高亮(拖动 y 时 x 不再误高亮)
             dragging: runtimeData.draging && ctrlScroll.activeAxis === props.scroll,
             es_back_scroll: runtimeData.back,
@@ -84,7 +82,7 @@ export default defineComponent({
         // 摇杆模式除外：pos 表示以轨道中心为原点的摇杆偏移量，允许正负。
         const displayPos = computed(() => {
             const pos = ctrlScroll.thumbRect[props.scroll].pos
-            if (props.scrollJoy) return pos
+            if (props.joytick) return pos
             return clamp(pos, 0, ctrlScroll.maxScrBarPos[props.scroll])
         })
 
@@ -98,7 +96,7 @@ export default defineComponent({
                 }
             }
             // x 轨摇杆使用固定宽度杆, 保证可拖动范围
-            const width = props.scrollJoy ? 100 : t.width
+            const width = props.joytick ? 100 : t.width
             return {
                 width: `${width}px`,
                 transform: `translate(${pos}px, -50%)`,
@@ -128,10 +126,8 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
 
 <style lang="scss">
 .es_scroll_bar {
-    // 滚动条独立携带主题 token(teleport 出容器后不依赖外部继承)
-    // 亮色: 深 thumb; 深色: 浅 thumb(与背景反色, 对比醒目)
-    --es-thumb: #6b7280;
-    --es-thumb-hover: #4b5563;
+    --es-thumb: rgba(107, 114, 128, 0.6);
+    --es-thumb-hover: rgba(75, 85, 99, 1);
     --es-thumb-active: #2563eb;
     --es-track-hover: rgba(0, 0, 0, 0.04);
     --es-width: 20px;
