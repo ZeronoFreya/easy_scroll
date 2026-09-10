@@ -37,8 +37,6 @@ export default defineComponent({
         const { signal } = controller
 
         const runtimeData = reactive({
-            // 输入扩展自管的 rAF 句柄(摇杆/中键拖动期间)
-            rafId: null,
             draging: false,
             back: useAutoResetBool(300),
             currCtrlType: '',
@@ -85,6 +83,37 @@ export default defineComponent({
         })        
 
         provide('runtimeData', runtimeData)
+
+        // 滚动条 auto-hide 共享状态：容器(滚动区域)与滚动条自身【分开跟踪】hover，
+        // 任一 hover → 显示；两处都离开才(延迟)渐隐。
+        // 分开跟踪的原因：若共用单个布尔，鼠标从滚动条滑到容器内容区/缝隙、
+        // 或经过 offsetScroll 造成的条与容器间空隙时，单方 mouseleave 会把整体
+        // 状态误清掉 → 滚动条“显示后闪没”。
+        // 显隐只用 opacity + CSS 过渡(见 scrollbar.vue)，不卸载滚动条 DOM。
+        const containerHover = ref(false)
+        // 滚动条自身 hover 逐轴跟踪(x/y 互不干扰): 两轴并存时离开其中一条,
+        // 不会误关仍在 hover 的另一条的可见性。
+        const barHover = reactive({ x: false, y: false })
+        let containerTimer = null
+        const barTimer = { x: null, y: null }
+        const clearHoverTimer = (timer) => {
+            if (timer) clearTimeout(timer)
+            return null
+        }
+        // 各自 leave 延迟落定：为“鼠标从容器移向被 teleport 到外部的滚动条”
+        // 及穿过窄缝隙留缓冲，避免中间帧双方同空导致闪烁。
+        const setContainerHover = (v) => {
+            containerTimer = clearHoverTimer(containerTimer)
+            if (v) containerHover.value = true
+            else containerTimer = setTimeout(() => (containerHover.value = false), 200)
+        }
+        const setBarHover = (axis, v) => {
+            barTimer[axis] = clearHoverTimer(barTimer[axis])
+            if (v) barHover[axis] = true
+            else barTimer[axis] = setTimeout(() => (barHover[axis] = false), 200)
+        }
+        const scrollUi = { containerHover, barHover, setContainerHover, setBarHover }
+        provide('scrollUi', scrollUi)
 
         // 主题解析: 'light'/'dark' 直接生效; 'auto' 跟随系统 prefers-color-scheme
         const mediaDark =
@@ -295,10 +324,15 @@ export default defineComponent({
             afterResize()
             observer.observe(boxRef.value, options)
             observer.observe(ulRef.value, options)
+
+            boxRef.value.style.setProperty('--es-bar-w', `${props.scrollWidth}px`);
         })
 
         onBeforeUnmount(() => {
             clearTimeout(wheelSettleTimer)
+            clearTimeout(containerTimer)
+            clearTimeout(barTimer.x)
+            clearTimeout(barTimer.y)
             if (mediaDark) mediaDark.removeEventListener('change', onSystemThemeChange)
 
             observer.unobserve(ulRef.value)
@@ -312,6 +346,7 @@ export default defineComponent({
             scrollCtrl,
             hint,
             resolvedTheme,
+            scrollUi,
             boxRef,
             ulRef,
             checkX,

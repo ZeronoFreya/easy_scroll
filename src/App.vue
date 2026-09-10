@@ -40,6 +40,20 @@ div.page(:data-es-theme="theme")
                 scrollAxis="y",
                 :midMouseNav="true",
                 :scrollBar="true",
+                scrollJoy="",
+                :scrollAutoHide="true",
+                :showHint="true",
+                offsetScrollY="120%",
+                autoSize="y",
+                :theme="theme",
+            )
+                ul.ul1
+                    li(v-for="i in 25" :key="i") auto-hide - {{ i }}
+        div
+            EasyScroll.easy_scroll(
+                scrollAxis="y",
+                :midMouseNav="true",
+                :scrollBar="true",
                 scrollJoy="a",
                 :showHint="true",
                 autoSize="y",

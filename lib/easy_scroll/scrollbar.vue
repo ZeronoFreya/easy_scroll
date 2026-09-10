@@ -1,6 +1,7 @@
 <script>
 import { defineComponent, inject, computed, onMounted } from 'vue'
 import { clamp } from './utils.js'
+import { calcScrollBarVisible } from './auto_hide.js'
 
 export default defineComponent({
     props: {
@@ -10,6 +11,7 @@ export default defineComponent({
         },
         joytick: Boolean,
         reverse: Boolean,
+        autoHide: Boolean,
         offset: String,
         // 空 = 不传送(留在组件容器内); 非空选择器 = Teleport 目标
         teleport: {
@@ -22,6 +24,26 @@ export default defineComponent({
         const scrollCtrl = inject('scrollCtrl')
         const ctrlScroll = scrollCtrl.scroll
         const theme = inject('theme', 'light')
+        const scrollUi = inject('scrollUi', null)
+
+        // 维持滚动条自身 hover(按自身轴跟踪): 滚动条被 teleport 出容器/位于 offset
+        // 缝隙旁时, 鼠标滑上滚动条本身也要点亮可见态; x/y 互不覆盖(见 index.vue)。
+        const setBarHover = (v) => scrollUi?.setBarHover(props.scroll, v)
+
+        // hover = 容器(滚动区域) hover 或本轴滚动条自身 hover; 拖动中恒可见。
+        // 决策见 auto_hide.js；不增删 DOM, 仅由 CSS 类切换 opacity + pointer-events 过渡。
+        const hovered = computed(
+            () => (scrollUi?.containerHover.value || scrollUi?.barHover[props.scroll]) ?? false,
+        )
+        const visible = computed(() =>
+            calcScrollBarVisible(props.autoHide, runtimeData.draging, hovered.value),
+        )
+        const rootClass = computed(() => ({
+            es_scroll_y: isY,
+            es_scroll_x: !isY,
+            es_auto_hide: props.autoHide,
+            es_visible: visible.value,
+        }))
 
         const isY = props.scroll === 'y'
         // 挂载/卸载时同步自身 DOM 引用(track/thumb), 支持 v-if 动态显隐
@@ -102,14 +124,15 @@ export default defineComponent({
                 transform: `translate(${pos}px, -50%)`,
             }
         })
-        return { runtimeData, ctrlScroll, isY, setBox, rootStyle, thumbClass, thumbStyle, theme }
+        return { runtimeData, ctrlScroll, isY, setBox, rootStyle, rootClass, setBarHover, thumbClass, thumbStyle, theme }
     },
 })
 </script>
 
 <template lang="pug">
 Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
-    .es_scroll_bar(:class="isY ? 'es_scroll_y' : 'es_scroll_x'", :ref="setBox", :data-es-theme="theme", :style="rootStyle")
+    .es_scroll_bar(:class="rootClass", :ref="setBox", :data-es-theme="theme", :style="rootStyle",
+        @mouseenter="setBarHover(true)", @mouseleave="setBarHover(false)")
         slot(:name="`scroll_${$props.scroll}`", 
             :sizeRatio="ctrlScroll.sizeRatio",
             :thumb="ctrlScroll.thumbRect[$props.scroll]",
@@ -178,6 +201,18 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
         }
     }
 
+    // auto-hide: 默认透明不可交互; 鼠标进入滚动区域/滚动条自身/拖动中 → es_visible 渐显。
+    // 仅根节点 opacity + pointer-events 过渡, 不卸载 DOM(Teleport defer 不重复挂载/卸载)。
+    &.es_auto_hide {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        &.es_visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    }
+
     // 纵向条（右侧）
     &.es_scroll_y {
         // top: 0;
@@ -194,7 +229,7 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
             top: 0;
             left: 50%;
             transform: translate(-50%, 0);
-            padding: 0 7px;
+            padding: 0 var(--es-bar-w);
 
             &.joytick {
                 height: 100px;
@@ -223,7 +258,7 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
             top: 50%;
             left: 0;
             transform: translate(0, -50%);
-            padding: 7px 0;
+            padding: var(--es-bar-w) 0;
 
             &.joytick {
                 width: 100px;
