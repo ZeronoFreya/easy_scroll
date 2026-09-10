@@ -112,7 +112,19 @@ export default defineComponent({
             if (v) barHover[axis] = true
             else barTimer[axis] = setTimeout(() => (barHover[axis] = false), 200)
         }
-        const scrollUi = { containerHover, barHover, setContainerHover, setBarHover }
+        // 空闲标记：滚动/拖动/鼠标移动停止 3s → 滚动条加上 es_idle 类；
+        // 再次滚动或鼠标移动时立即摘除并重新计时。仅负责切换 class。
+        const scrollIdle = ref(false)
+        let idleTimer = null
+        const resetIdle = () => {
+            if (scrollIdle.value) scrollIdle.value = false
+            if (idleTimer) clearTimeout(idleTimer)
+            idleTimer = setTimeout(() => {
+                idleTimer = null
+                scrollIdle.value = true
+            }, 2000)
+        }
+        const scrollUi = { containerHover, barHover, setContainerHover, setBarHover, scrollIdle, resetIdle }
         provide('scrollUi', scrollUi)
 
         // 主题解析: 'light'/'dark' 直接生效; 'auto' 跟随系统 prefers-color-scheme
@@ -158,6 +170,7 @@ export default defineComponent({
 
         // 组合根桥接: 滚轮事件 → 内核滚动; hint 启用时再通知其响应过界区滚轮方向
         const onWheel = (e) => {
+            resetIdle()
             scrollCtrl.wheel.onWheel(e)
             // 各轴分量与 use_wheel 同源(readWheel: 上/左为正), 避免符号歧义
             const { x: horizontal, y: vertical } = readWheel(e)
@@ -271,6 +284,7 @@ export default defineComponent({
         watch(
             () => [runtimeData.scroll.x, runtimeData.maxScroll.x],
             ([left, max]) => {
+                resetIdle()
                 runtimeData.progress.x = safeDivide(left, max)
 
                 // x 轴过界标记(与 y 同构)
@@ -287,6 +301,7 @@ export default defineComponent({
         watch(
             () => [runtimeData.scroll.y, runtimeData.maxScroll.y],
             ([top, max]) => {
+                resetIdle()
                 runtimeData.progress.y = safeDivide(top, max)
 
                 // 过界标记判定收敛到 overscroll 模块
@@ -333,6 +348,7 @@ export default defineComponent({
             clearTimeout(containerTimer)
             clearTimeout(barTimer.x)
             clearTimeout(barTimer.y)
+            clearTimeout(idleTimer)
             if (mediaDark) mediaDark.removeEventListener('change', onSystemThemeChange)
 
             observer.unobserve(ulRef.value)

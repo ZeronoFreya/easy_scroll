@@ -30,6 +30,9 @@ export default defineComponent({
         // 缝隙旁时, 鼠标滑上滚动条本身也要点亮可见态; x/y 互不覆盖(见 index.vue)。
         const setBarHover = (v) => scrollUi?.setBarHover(props.scroll, v)
 
+        // 鼠标在滚动条上移动也唤醒 idle(teleport 到容器外时容器收不到 mousemove)
+        const resetIdle = () => scrollUi?.resetIdle()
+
         // hover = 容器(滚动区域) hover 或本轴滚动条自身 hover; 拖动中恒可见。
         // 决策见 auto_hide.js；不增删 DOM, 仅由 CSS 类切换 opacity + pointer-events 过渡。
         const hovered = computed(
@@ -43,6 +46,8 @@ export default defineComponent({
             es_scroll_x: !isY,
             es_auto_hide: props.autoHide,
             es_visible: visible.value,
+            // 滚动/鼠标活动停止 3s 后由 index.vue 置位(见 scrollUi)
+            'es_idle': scrollUi?.scrollIdle.value ?? false,
         }))
 
         const isY = props.scroll === 'y'
@@ -124,7 +129,7 @@ export default defineComponent({
                 transform: `translate(${pos}px, -50%)`,
             }
         })
-        return { runtimeData, ctrlScroll, isY, setBox, rootStyle, rootClass, setBarHover, thumbClass, thumbStyle, theme }
+        return { runtimeData, ctrlScroll, isY, setBox, rootStyle, rootClass, setBarHover, resetIdle, thumbClass, thumbStyle, theme }
     },
 })
 </script>
@@ -132,7 +137,7 @@ export default defineComponent({
 <template lang="pug">
 Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
     .es_scroll_bar(:class="rootClass", :ref="setBox", :data-es-theme="theme", :style="rootStyle",
-        @mouseenter="setBarHover(true)", @mouseleave="setBarHover(false)")
+        @mouseenter="setBarHover(true)", @mouseleave="setBarHover(false)", @mousemove="resetIdle")
         slot(:name="`scroll_${$props.scroll}`", 
             :sizeRatio="ctrlScroll.sizeRatio",
             :thumb="ctrlScroll.thumbRect[$props.scroll]",
@@ -160,9 +165,12 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
         --es-thumb-active: #60a5fa;
         --es-track-hover: rgba(255, 255, 255, 0.06);
     }
+    opacity: 1;
+    transition: opacity 0.25s ease;
     position: absolute;
     background: transparent;
     z-index: 2;
+    
     .es_track {
         position: relative;
         width: 100%;
@@ -206,11 +214,15 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
     &.es_auto_hide {
         opacity: 0;
         pointer-events: none;
-        transition: opacity 0.25s ease;
-        &.es_visible {
+        
+        
+    }
+    &.es_visible {
             opacity: 1;
             pointer-events: auto;
         }
+    &.es_idle{
+        opacity: 0.3;
     }
 
     // 纵向条（右侧）
