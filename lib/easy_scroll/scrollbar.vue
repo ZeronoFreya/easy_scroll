@@ -7,7 +7,7 @@ export default defineComponent({
     props: {
         scroll: {
             type: String,
-            required: true
+            required: true,
         },
         joytick: Boolean,
         reverse: Boolean,
@@ -47,7 +47,7 @@ export default defineComponent({
             es_auto_hide: props.autoHide,
             es_visible: visible.value,
             // 滚动/鼠标活动停止 3s 后由 index.vue 置位(见 scrollUi)
-            'es_idle': scrollUi?.scrollIdle.value ?? false,
+            es_idle: scrollUi?.scrollIdle.value ?? false,
         }))
 
         const isY = props.scroll === 'y'
@@ -71,7 +71,6 @@ export default defineComponent({
         })
 
         const rootStyle = computed(() => {
-            
             const r = props.reverse
             const pos = isY
                 ? {
@@ -90,7 +89,7 @@ export default defineComponent({
             //     return pos
             // }
             const k = isY ? 'X' : 'Y'
-            const v = r ? `-${props.offset}`.replace("--", "") : props.offset
+            const v = r ? `-${props.offset}`.replace('--', '') : props.offset
             return {
                 ...pos,
                 transform: `translate${k}(${v})`,
@@ -129,7 +128,19 @@ export default defineComponent({
                 transform: `translate(${pos}px, -50%)`,
             }
         })
-        return { runtimeData, ctrlScroll, isY, setBox, rootStyle, rootClass, setBarHover, resetIdle, thumbClass, thumbStyle, theme }
+        return {
+            runtimeData,
+            ctrlScroll,
+            isY,
+            setBox,
+            rootStyle,
+            rootClass,
+            setBarHover,
+            resetIdle,
+            thumbClass,
+            thumbStyle,
+            theme,
+        }
     },
 })
 </script>
@@ -170,7 +181,7 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
     position: absolute;
     background: transparent;
     z-index: 2;
-    
+
     .es_track {
         position: relative;
         width: 100%;
@@ -211,18 +222,17 @@ Teleport(:to="teleport || 'body'", defer, :disabled="!teleport")
 
     // auto-hide: 默认透明不可交互; 鼠标进入滚动区域/滚动条自身/拖动中 → es_visible 渐显。
     // 仅根节点 opacity + pointer-events 过渡, 不卸载 DOM(Teleport defer 不重复挂载/卸载)。
+
     &.es_auto_hide {
         opacity: 0;
         pointer-events: none;
-        
-        
-    }
-    &.es_visible {
+        &.es_visible {
             opacity: 1;
             pointer-events: auto;
+            &.es_idle {
+                opacity: 0.2;
+            }
         }
-    &.es_idle{
-        opacity: 0.3;
     }
 
     // 纵向条（右侧）
